@@ -1,0 +1,18 @@
+module.exports = {
+  // Bot token. https://discordapp.com/developers/applications/me
+  TOKEN: '',
+  // Cleverbot key. https://www.cleverbot.com/api
+  CLEVERBOT: '',
+  // Almanax channel name.
+  CHANNEL_ALMANAX: 'almanax',
+  // Channel name to send deleted messages.
+  CHANNEL_DELETE: 'madhouse',
+  // Channel names that are ignored for the deleted messages.
+  CHANNEL_IGNORE: ['ads', 'almanax', 'annonces', 'announcements', 'madhouse'],
+  // Nitro Booster role name.
+  ROLE_NITRO: '✨Nitro Booster✨',
+  // Streaming role name.
+  ROLE_STREAMING: '🎥Streaming🎥',
+  // Streamer role name.
+  ROLE_STREAMER: '🎥Streamer🎥'
+};
