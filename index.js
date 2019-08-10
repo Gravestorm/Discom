@@ -257,7 +257,7 @@ client.on('ready', () => {
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === tweet)) return;
+              if (msgs.find(m => m.content === tweet) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
               c.send(tweet);
             });
           }
@@ -268,7 +268,7 @@ client.on('ready', () => {
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNONCES')) {
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === tweet)) return;
+              if (msgs.find(m => m.content === tweet) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
               c.send(tweet);
             });
           }
