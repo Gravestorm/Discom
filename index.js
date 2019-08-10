@@ -256,6 +256,7 @@ client.on('ready', () => {
         let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
             c.fetchMessages().then(msgs => {
               if (msgs.find(m => m.content === tweet) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
               c.send(tweet);
@@ -267,6 +268,7 @@ client.on('ready', () => {
         let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNONCES')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
             c.fetchMessages().then(msgs => {
               if (msgs.find(m => m.content === tweet) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
               c.send(tweet);
