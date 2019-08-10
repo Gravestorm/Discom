@@ -7,8 +7,6 @@ module.exports = {
   CHANNEL_ALMANAX: 'almanax',
   // Channel name to send deleted messages.
   CHANNEL_DELETE: 'madhouse',
-  // Channel names that are ignored for the deleted messages.
-  CHANNEL_IGNORE: ['ads', 'almanax', 'annonces', 'announcements', 'madhouse'],
   // Nitro Booster role name.
   ROLE_NITRO: '✨Nitro Booster✨',
   // Streaming role name.

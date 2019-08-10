@@ -208,7 +208,7 @@ client.on('ready', () => {
 });
 if (nconf.get('CHANNEL_DELETE')) {
   client.on('messageDelete', msg => {
-    if (nconf.get('CHANNEL_IGNORE').includes(msg.channel.name)) return;
+    if (['ads', 'almanax', 'annonces', 'announcements', 'madhouse'].includes(msg.channel.name)) return;
     client.channels.find(c => c.name === nconf.get('CHANNEL_DELETE')).send(embed.setAuthor(msg.author.username, msg.author.avatarURL).setDescription(msg.content).setFooter(`#${msg.channel.name}`).setTimestamp(msg.createdTimestamp).setColor(randomColor()));
   });
 }
