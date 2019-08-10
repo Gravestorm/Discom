@@ -8,10 +8,12 @@ module.exports = {
   CONSUMER_SECRET: '',
   ACCESS_TOKEN: '',
   ACCESS_TOKEN_SECRET: '',
-  // Almanax/Annonces/Announcements channel names.
-  CHANNEL_ALMANAX: 'almanax',
-  CHANNEL_ANNONCES: 'annonces',
+  // Announcements/Annonces/Ads/Almanax/Delete channel names.
   CHANNEL_ANNOUNCEMENTS: 'announcements',
+  CHANNEL_ANNONCES: 'annonces',
+  CHANNEL_ADS: 'ads',
+  CHANNEL_ALMANAX: 'almanax',
+  CHANNEL_DELETE: 'madhouse',
   // Nitro Booster/Streaming/Streamer role names.
   ROLE_NITRO: '✨Nitro Booster✨',
   ROLE_STREAMING: '🎥Streaming🎥',

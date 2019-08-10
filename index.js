@@ -7,6 +7,7 @@ import randomColor from 'randomcolor';
 import rp from 'request-promise';
 import startExpress from './express';
 import Twit from 'twit';
+import ytpl from 'ytpl';
 const client = new Discord.Client();
 const embed = new Discord.RichEmbed();
 const T = new Twit({
@@ -35,13 +36,10 @@ const commands = {
   d: {
     process: (client, msg, suffix) => {
       if (!suffix[0] || isNaN(suffix[0])) return;
+      msg.delete();
       msg.guild.fetchMembers().then(g => {
         if (g.me.permissions.has('MANAGE_MESSAGES') && msg.member.permissions.has('MANAGE_MESSAGES')) {
           if (suffix[0] > 100) suffix[0] = 100;
-          msg.channel.send('.');
-          setTimeout(() => {
-            msg.channel.bulkDelete(2);
-          }, 100);
           setTimeout(() => {
             msg.channel.fetchMessages().then(msgs => {
               if (msg.mentions.channels.first() && msg.mentions.users.first()) {
@@ -62,7 +60,7 @@ const commands = {
                 msg.channel.bulkDelete(suffix[0]);
               }
             });
-          }, 500);
+          }, 100);
         }
       });
     }
@@ -70,14 +68,11 @@ const commands = {
   c: {
     process: (client, msg, suffix) => {
       if (!nconf.get('ROLE_NITRO')) return;
+      msg.delete();
       msg.guild.fetchMembers().then(g => {
         if (g.me.permissions.has('MANAGE_MESSAGES') && g.me.permissions.has('MANAGE_ROLES') && msg.member.permissions.has('VIEW_AUDIT_LOG')) {
           if (!suffix[0]) suffix[0] = 'random';
           if (!suffix[1]) suffix[1] = 'bright';
-          msg.channel.send('.');
-          setTimeout(() => {
-            msg.channel.bulkDelete(2);
-          }, 100);
           g.roles.find(r => r.name === nconf.get('ROLE_NITRO')).setColor(randomColor({
             hue: suffix[0],
             luminosity: suffix[1]
@@ -89,10 +84,6 @@ const commands = {
   q: {
     process: (client, msg, suffix) => {
       if (!suffix[0] || isNaN(suffix[0])) return;
-      msg.channel.send('.');
-      setTimeout(() => {
-        msg.channel.bulkDelete(2);
-      }, 100);
       if (msg.mentions.channels.first()) {
         msg.mentions.channels.first().fetchMessage(suffix[0]).then(m => {
           msg.channel.send(embed.setAuthor(m.author.username, m.author.avatarURL).setDescription(m.content).setFooter(`#${m.channel.name}`).setTimestamp(m.createdTimestamp).setColor(randomColor()))
@@ -278,10 +269,38 @@ client.on('ready', () => {
       });
     }, 60000); // 60000 = 1 minute
   }, 8000);
+  setTimeout(() => {
+    setInterval(() => {
+      ytpl('UUJ_tz6Xl_YtrAHd3gqChhMA', {limit: 1}, (err, playlist) => {
+        let vid = playlist.items[0].url_simple;
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ADS')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === vid) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              c.send(vid);
+            });
+          }
+        });
+      });
+      ytpl('UUvNdYvCMA9FcjFAV2gg8R6A', {limit: 1}, (err, playlist) => {
+        let vid = playlist.items[0].url_simple;
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ADS')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === vid) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              c.send(vid);
+            });
+          }
+        });
+      });
+    }, 600000); // 600000 = 10 minutes
+  }, 10000);
 });
 if (nconf.get('CHANNEL_DELETE')) {
   client.on('messageDelete', msg => {
-    if (msg.channel.guild.id !== '78581046714572800' || ['ads', 'almanax', 'annonces', 'announcements', 'madhouse'].includes(msg.channel.name)) return;
+    if (msg.content[0] === '!' || msg.channel.guild.id !== '78581046714572800' || ['ads', 'almanax', 'annonces', 'announcements', 'madhouse'].includes(msg.channel.name)) return;
     client.channels.find(c => c.id === '590904233650552833').send(embed.setAuthor(msg.author.username, msg.author.avatarURL).setDescription(msg.content).setFooter(`#${msg.channel.name}`).setTimestamp(msg.createdTimestamp).setColor(randomColor()));
   });
 }
