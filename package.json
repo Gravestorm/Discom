@@ -14,7 +14,8 @@
     "nconf": "^0.10.0",
     "path": "^0.12.7",
     "randomcolor": "^0.5.4",
-    "request-promise": "^4.2.4"
+    "request-promise": "^4.2.4",
+    "twit": "^2.2.11"
   },
   "scripts": {
     "start": "node -r esm index.js && forever start --minUptime 5000 --spinSleepTime 5000 index.js"

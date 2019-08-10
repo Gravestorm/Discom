@@ -6,8 +6,16 @@ import nconf from 'nconf';
 import randomColor from 'randomcolor';
 import rp from 'request-promise';
 import startExpress from './express';
+import Twit from 'twit';
 const client = new Discord.Client();
 const embed = new Discord.RichEmbed();
+const T = new Twit({
+  consumer_key: nconf.get('CONSUMER_KEY'),
+  consumer_secret: nconf.get('CONSUMER_SECRET'),
+  access_token: nconf.get('ACCESS_TOKEN'),
+  access_token_secret: nconf.get('ACCESS_TOKEN_SECRET'),
+  timeout_ms: 60 * 1000
+});
 let clever = new Cleverbot({
   key: nconf.get('CLEVERBOT')
 });
@@ -30,7 +38,10 @@ const commands = {
       msg.guild.fetchMembers().then(g => {
         if (g.me.permissions.has('MANAGE_MESSAGES') && msg.member.permissions.has('MANAGE_MESSAGES')) {
           if (suffix[0] > 100) suffix[0] = 100;
-          msg.channel.bulkDelete(1);
+          msg.channel.send('.');
+          setTimeout(() => {
+            msg.channel.bulkDelete(2);
+          }, 100);
           setTimeout(() => {
             msg.channel.fetchMessages().then(msgs => {
               if (msg.mentions.channels.first() && msg.mentions.users.first()) {
@@ -63,7 +74,10 @@ const commands = {
         if (g.me.permissions.has('MANAGE_MESSAGES') && g.me.permissions.has('MANAGE_ROLES') && msg.member.permissions.has('VIEW_AUDIT_LOG')) {
           if (!suffix[0]) suffix[0] = 'random';
           if (!suffix[1]) suffix[1] = 'random';
-          msg.channel.bulkDelete(1);
+          msg.channel.send('.');
+          setTimeout(() => {
+            msg.channel.bulkDelete(2);
+          }, 100);
           g.roles.find(r => r.name === nconf.get('ROLE_NITRO')).setColor(randomColor({
             hue: suffix[0],
             luminosity: suffix[1]
@@ -71,60 +85,46 @@ const commands = {
         }
       });
     }
+  },
+  q: {
+    process: (client, msg, suffix) => {
+      if (!suffix[0] || isNaN(suffix[0])) return;
+      msg.channel.send('.');
+      setTimeout(() => {
+        msg.channel.bulkDelete(2);
+      }, 100);
+      if (msg.mentions.channels.first()) {
+        msg.mentions.channels.first().fetchMessage(suffix[0]).then(m => {
+          msg.channel.send(embed.setAuthor(m.author.username, m.author.avatarURL).setDescription(m.content).setFooter(`#${m.channel.name}`).setTimestamp(m.createdTimestamp).setColor(randomColor()))
+        });
+      } else {
+        msg.channel.fetchMessage(suffix[0]).then(m => {
+          msg.channel.send(embed.setAuthor(m.author.username, m.author.avatarURL).setDescription(m.content).setFooter(`#${m.channel.name}`).setTimestamp(m.createdTimestamp).setColor(randomColor()))
+        });
+      }
+    }
   }
 };
 client.on('ready', () => {
   startExpress();
   setTimeout(() => {
     if (!nconf.get('CHANNEL_ALMANAX')) return;
-      setInterval(() => {
-        client.channels.forEach(c => {
-          if (c.name === nconf.get('CHANNEL_ALMANAX')) {
-            c.fetchMessages().then(m => {
-              let text = '';
-              let date = new Date();
-              let year = date.getFullYear();
-              let month = date.getMonth() + 1;
-              let day = date.getDate();
-              if (month < 10) month = `0${month}`;
-              if (day < 10) day = `0${day}`;
-              let dat = `${year}-${month}-${day}`;
-              if (m.first()) {
-                let datt = m.first().content[12] + m.first().content[13];
-                if (datt.toString() !== day.toString()) {
-                  m.first().delete();
-                  let options = {
-                    uri: 'http://www.krosmoz.com/en/almanax',
-                    encoding: 'utf8',
-                    transform: (body) => {
-                      return cheerio.load(body);
-                    }
-                  };
-                  rp(options).then(($) => {
-                    let questen = $('#achievement_dofus .mid .more .more-infos p').first().text().trim();
-                    let offeren = $('#achievement_dofus .mid .more .more-infos .more-infos-content .fleft').first().text().trim();
-                    let bonusen = $('#achievement_dofus .mid .more').first().children().remove('div.more-infos').end().text().trim();
-                    let mainen = $('#achievement_dofus .mid').first().children().remove('div.more').end().text().trim();
-                    text += `__**${dat}**__\n\n**${mainen}**\n${bonusen}\n\n**${questen}**\n${offeren}`;
-                    let options = {
-                      uri: 'http://www.krosmoz.com/fr/almanax',
-                      encoding: 'utf8',
-                      transform: (body) => {
-                        return cheerio.load(body);
-                      }
-                    };
-                    rp(options).then(($) => {
-                      let questfr = $('#achievement_dofus .mid .more .more-infos p').first().text().trim();
-                      let offerfr = $('#achievement_dofus .mid .more .more-infos .more-infos-content .fleft').first().text().trim();
-                      let image = $('#achievement_dofus .mid .more .more-infos .more-infos-content img').attr('src');
-                      let bonusfr = $('#achievement_dofus .mid .more').first().children().remove('div.more-infos').end().text().trim();
-                      let mainfr = $('#achievement_dofus .mid').first().children().remove('div.more').end().text().trim();
-                      text += `\n\n\n**${mainfr}**\n${bonusfr}\n\n**${questfr}**\n${offerfr}\n\n${image}`;
-                      c.send(text);
-                    });
-                  });
-                }
-              } else {
+    setInterval(() => {
+      client.channels.forEach(c => {
+        if (c.name === nconf.get('CHANNEL_ALMANAX')) {
+          c.fetchMessages().then(m => {
+            let text = '';
+            let date = new Date();
+            let year = date.getFullYear();
+            let month = date.getMonth() + 1;
+            let day = date.getDate();
+            if (month < 10) month = `0${month}`;
+            if (day < 10) day = `0${day}`;
+            let dat = `${year}-${month}-${day}`;
+            if (m.first()) {
+              let datt = m.first().content[12] + m.first().content[13];
+              if (datt.toString() !== day.toString()) {
+                m.first().delete();
                 let options = {
                   uri: 'http://www.krosmoz.com/en/almanax',
                   encoding: 'utf8',
@@ -156,11 +156,43 @@ client.on('ready', () => {
                   });
                 });
               }
-            });
-          }
-        });
-      }, 600000); // 600000 = 10 minutes
-  }, 3000);
+            } else {
+              let options = {
+                uri: 'http://www.krosmoz.com/en/almanax',
+                encoding: 'utf8',
+                transform: (body) => {
+                  return cheerio.load(body);
+                }
+              };
+              rp(options).then(($) => {
+                let questen = $('#achievement_dofus .mid .more .more-infos p').first().text().trim();
+                let offeren = $('#achievement_dofus .mid .more .more-infos .more-infos-content .fleft').first().text().trim();
+                let bonusen = $('#achievement_dofus .mid .more').first().children().remove('div.more-infos').end().text().trim();
+                let mainen = $('#achievement_dofus .mid').first().children().remove('div.more').end().text().trim();
+                text += `__**${dat}**__\n\n**${mainen}**\n${bonusen}\n\n**${questen}**\n${offeren}`;
+                let options = {
+                  uri: 'http://www.krosmoz.com/fr/almanax',
+                  encoding: 'utf8',
+                  transform: (body) => {
+                    return cheerio.load(body);
+                  }
+                };
+                rp(options).then(($) => {
+                  let questfr = $('#achievement_dofus .mid .more .more-infos p').first().text().trim();
+                  let offerfr = $('#achievement_dofus .mid .more .more-infos .more-infos-content .fleft').first().text().trim();
+                  let image = $('#achievement_dofus .mid .more .more-infos .more-infos-content img').attr('src');
+                  let bonusfr = $('#achievement_dofus .mid .more').first().children().remove('div.more-infos').end().text().trim();
+                  let mainfr = $('#achievement_dofus .mid').first().children().remove('div.more').end().text().trim();
+                  text += `\n\n\n**${mainfr}**\n${bonusfr}\n\n**${questfr}**\n${offerfr}\n\n${image}`;
+                  c.send(text);
+                });
+              });
+            }
+          });
+        }
+      });
+    }, 600000); // 600000 = 10 minutes
+  }, 2000);
   setTimeout(() => {
     if (!nconf.get('ROLE_STREAMING')) return;
     setInterval(() => {
@@ -194,7 +226,7 @@ client.on('ready', () => {
         });
       });
     }, 60000); // 60000 = 1 minute
-  }, 6000);
+  }, 4000);
   setTimeout(() => {
     if (!nconf.get('ROLE_NITRO')) return;
     setInterval(() => {
@@ -204,12 +236,51 @@ client.on('ready', () => {
         }
       });
     }, 3600000); // 3600000 = 60 minutes
-  }, 9000);
+  }, 6000);
+  setTimeout(() => {
+    if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES') || !nconf.get('CONSUMER_KEY') || !nconf.get('CONSUMER_SECRET') || !nconf.get('ACCESS_TOKEN') || !nconf.get('ACCESS_TOKEN_SECRET')) return;
+    let optionsen = {
+      screen_name: 'DOFUS_EN',
+      exclude_replies: true,
+      include_rts: false,
+      count: 1
+    };
+    let optionsfr = {
+      screen_name: 'DOFUSfr',
+      exclude_replies: true,
+      include_rts: false,
+      count: 1
+    };
+    setInterval(() => {
+      T.get('statuses/user_timeline', optionsen, (err, data) => {
+        let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === tweet)) return;
+              c.send(tweet);
+            });
+          }
+        });
+      });
+      T.get('statuses/user_timeline', optionsfr, (err, data) => {
+        let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ANNONCES')) {
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === tweet)) return;
+              c.send(tweet);
+            });
+          }
+        });
+      });
+    }, 60000); // 60000 = 1 minute
+  }, 8000);
 });
 if (nconf.get('CHANNEL_DELETE')) {
   client.on('messageDelete', msg => {
-    if (['ads', 'almanax', 'annonces', 'announcements', 'madhouse'].includes(msg.channel.name)) return;
-    client.channels.find(c => c.name === nconf.get('CHANNEL_DELETE')).send(embed.setAuthor(msg.author.username, msg.author.avatarURL).setDescription(msg.content).setFooter(`#${msg.channel.name}`).setTimestamp(msg.createdTimestamp).setColor(randomColor()));
+    if (msg.channel.guild.id !== '78581046714572800' || ['ads', 'almanax', 'annonces', 'announcements', 'madhouse'].includes(msg.channel.name)) return;
+    client.channels.find(c => c.id === '590904233650552833').send(embed.setAuthor(msg.author.username, msg.author.avatarURL).setDescription(msg.content).setFooter(`#${msg.channel.name}`).setTimestamp(msg.createdTimestamp).setColor(randomColor()));
   });
 }
 client.on('message', msg => {

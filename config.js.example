@@ -3,14 +3,17 @@ module.exports = {
   TOKEN: '',
   // Cleverbot key. https://www.cleverbot.com/api
   CLEVERBOT: '',
-  // Almanax channel name.
+  // Twitter keys. https://developer.twitter.com/en/apps
+  CONSUMER_KEY: '',
+  CONSUMER_SECRET: '',
+  ACCESS_TOKEN: '',
+  ACCESS_TOKEN_SECRET: '',
+  // Almanax/Annonces/Announcements channel names.
   CHANNEL_ALMANAX: 'almanax',
-  // Channel name to send deleted messages.
-  CHANNEL_DELETE: 'madhouse',
-  // Nitro Booster role name.
+  CHANNEL_ANNONCES: 'annonces',
+  CHANNEL_ANNOUNCEMENTS: 'announcements',
+  // Nitro Booster/Streaming/Streamer role names.
   ROLE_NITRO: '✨Nitro Booster✨',
-  // Streaming role name.
   ROLE_STREAMING: '🎥Streaming🎥',
-  // Streamer role name.
   ROLE_STREAMER: '🎥Streamer🎥'
 };
