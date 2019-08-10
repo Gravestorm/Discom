@@ -62,7 +62,7 @@ const commands = {
       msg.guild.fetchMembers().then(g => {
         if (g.me.permissions.has('MANAGE_MESSAGES') && g.me.permissions.has('MANAGE_ROLES') && msg.member.permissions.has('VIEW_AUDIT_LOG')) {
           if (!suffix[0]) suffix[0] = 'random';
-          if (!suffix[1]) suffix[1] = 'random';
+          if (!suffix[1]) suffix[1] = 'bright';
           msg.channel.bulkDelete(1);
           g.roles.find(r => r.name === nconf.get('ROLE_NITRO')).setColor(randomColor({
             hue: suffix[0],
