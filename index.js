@@ -3,6 +3,7 @@ import cheerio from 'cheerio';
 import Cleverbot from 'cleverbot';
 import Discord from 'discord.js';
 import nconf from 'nconf';
+import Parser from 'rss-parser';
 import randomColor from 'randomcolor';
 import rp from 'request-promise';
 import startExpress from './express';
@@ -10,15 +11,16 @@ import Twit from 'twit';
 import ytpl from 'ytpl';
 const client = new Discord.Client();
 const embed = new Discord.RichEmbed();
+const parser = new Parser();
+const clever = new Cleverbot({
+  key: nconf.get('CLEVERBOT')
+});
 const T = new Twit({
   consumer_key: nconf.get('CONSUMER_KEY'),
   consumer_secret: nconf.get('CONSUMER_SECRET'),
   access_token: nconf.get('ACCESS_TOKEN'),
   access_token_secret: nconf.get('ACCESS_TOKEN_SECRET'),
   timeout_ms: 60 * 1000
-});
-let clever = new Cleverbot({
-  key: nconf.get('CLEVERBOT')
 });
 const commands = {
   chat: {
@@ -97,7 +99,7 @@ const commands = {
   }
 };
 client.on('ready', () => {
-  startExpress();
+  if (!nconf.get('LOCAL')) startExpress();
   setTimeout(() => {
     if (!nconf.get('CHANNEL_ALMANAX')) return;
     setInterval(() => {
@@ -183,7 +185,7 @@ client.on('ready', () => {
         }
       });
     }, 600000); // 600000 = 10 minutes
-  }, 2000);
+  }, 1000);
   setTimeout(() => {
     if (!nconf.get('ROLE_STREAMING')) return;
     setInterval(() => {
@@ -217,7 +219,7 @@ client.on('ready', () => {
         });
       });
     }, 60000); // 60000 = 1 minute
-  }, 4000);
+  }, 2000);
   setTimeout(() => {
     if (!nconf.get('ROLE_NITRO')) return;
     setInterval(() => {
@@ -227,7 +229,7 @@ client.on('ready', () => {
         }
       });
     }, 3600000); // 3600000 = 60 minutes
-  }, 6000);
+  }, 3000);
   setTimeout(() => {
     if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES') || !nconf.get('CONSUMER_KEY') || !nconf.get('CONSUMER_SECRET') || !nconf.get('ACCESS_TOKEN') || !nconf.get('ACCESS_TOKEN_SECRET')) return;
     let optionsen = {
@@ -268,8 +270,9 @@ client.on('ready', () => {
         });
       });
     }, 60000); // 60000 = 1 minute
-  }, 8000);
+  }, 4000);
   setTimeout(() => {
+    if (!nconf.get('CHANNEL_ADS')) return;
     setInterval(() => {
       ytpl('UUJ_tz6Xl_YtrAHd3gqChhMA', {limit: 1}, (err, playlist) => {
         let vid = playlist.items[0].url_simple;
@@ -296,9 +299,86 @@ client.on('ready', () => {
         });
       });
     }, 600000); // 600000 = 10 minutes
-  }, 10000);
+  }, 5000);
+  setTimeout(() => {
+    if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES')) return;
+    setInterval(() => {
+      parser.parseURL('https://www.dofus.com/en/rss/news.xml', (err, feed) => {
+        let post = feed.items[0].link.trim();
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              c.send(post);
+            });
+          }
+        });
+      })
+      parser.parseURL('https://www.dofus.com/en/rss/devblog.xml', (err, feed) => {
+        let post = feed.items[0].link.trim();
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              c.send(post);
+            });
+          }
+        });
+      })
+      parser.parseURL('https://www.dofus.com/en/rss/changelog.xml', (err, feed) => {
+        let post = feed.items[0].link.trim();
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              c.send(post);
+            });
+          }
+        });
+      })
+      parser.parseURL('https://www.dofus.com/fr/rss/news.xml', (err, feed) => {
+        let post = feed.items[0].link.trim();
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ANNONCES')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              c.send(post);
+            });
+          }
+        });
+      })
+      parser.parseURL('https://www.dofus.com/fr/rss/devblog.xml', (err, feed) => {
+        let post = feed.items[0].link.trim();
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ANNONCES')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              c.send(post);
+            });
+          }
+        });
+      })
+      parser.parseURL('https://www.dofus.com/fr/rss/changelog.xml', (err, feed) => {
+        let post = feed.items[0].link.trim();
+        client.channels.forEach(c => {
+          if (c.name === nconf.get('CHANNEL_ANNONCES')) {
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            c.fetchMessages().then(msgs => {
+              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              c.send(post);
+            });
+          }
+        });
+      })
+    }, 300000); // 300000 = 5 minutes
+  }, 6000);
 });
-if (nconf.get('CHANNEL_DELETE')) {
+if (nconf.get('DELETE')) {
   client.on('messageDelete', msg => {
     if (msg.content[0] === '!' || msg.channel.guild.id !== '78581046714572800' || ['ads', 'almanax', 'annonces', 'announcements', 'madhouse'].includes(msg.channel.name)) return;
     client.channels.find(c => c.id === '590904233650552833').send(embed.setAuthor(msg.author.username, msg.author.avatarURL).setDescription(msg.content).setFooter(`#${msg.channel.name}`).setTimestamp(msg.createdTimestamp).setColor(randomColor()));
