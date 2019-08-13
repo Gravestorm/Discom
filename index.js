@@ -37,8 +37,8 @@ const commands = {
   },
   d: {
     process: (client, msg, suffix) => {
-      if (!suffix[0] || isNaN(suffix[0])) return;
       msg.delete();
+      if (!suffix[0] || isNaN(suffix[0])) return;
       msg.guild.fetchMembers().then(g => {
         if (g.me.permissions.has('MANAGE_MESSAGES') && msg.member.permissions.has('MANAGE_MESSAGES')) {
           if (suffix[0] > 100) suffix[0] = 100;
@@ -69,8 +69,8 @@ const commands = {
   },
   c: {
     process: (client, msg, suffix) => {
-      if (!nconf.get('ROLE_NITRO')) return;
       msg.delete();
+      if (!nconf.get('ROLE_NITRO')) return;
       msg.guild.fetchMembers().then(g => {
         if (g.me.permissions.has('MANAGE_MESSAGES') && g.me.permissions.has('MANAGE_ROLES') && msg.member.permissions.has('VIEW_AUDIT_LOG')) {
           if (!suffix[0]) suffix[0] = 'random';
@@ -85,14 +85,15 @@ const commands = {
   },
   q: {
     process: (client, msg, suffix) => {
+      msg.delete();
       if (!suffix[0] || isNaN(suffix[0])) return;
       if (msg.mentions.channels.first()) {
         msg.mentions.channels.first().fetchMessage(suffix[0]).then(m => {
-          msg.channel.send(embed.setAuthor(m.author.username, m.author.avatarURL).setDescription(m.content).setFooter(`#${m.channel.name}`).setTimestamp(m.createdTimestamp).setColor(randomColor()))
+          msg.channel.send(embed.setAuthor(m.author.username, m.author.avatarURL).setDescription(m.content).setImage(m.attachments.first() ? m.attachments.first().proxyURL : '').setFooter(`Requested by ${msg.author.username} from #${m.channel.name}`, msg.author.avatarURL).setTimestamp(m.createdTimestamp).setColor(randomColor()))
         });
       } else {
         msg.channel.fetchMessage(suffix[0]).then(m => {
-          msg.channel.send(embed.setAuthor(m.author.username, m.author.avatarURL).setDescription(m.content).setFooter(`#${m.channel.name}`).setTimestamp(m.createdTimestamp).setColor(randomColor()))
+          msg.channel.send(embed.setAuthor(m.author.username, m.author.avatarURL).setDescription(m.content).setImage(m.attachments.first() ? m.attachments.first().proxyURL : '').setFooter(`Requested by ${msg.author.username} from #${m.channel.name}`, msg.author.avatarURL).setTimestamp(m.createdTimestamp).setColor(randomColor()))
         });
       }
     }
