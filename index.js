@@ -105,6 +105,7 @@ client.on('ready', () => {
     setInterval(() => {
       client.channels.forEach(c => {
         if (c.name === nconf.get('CHANNEL_ALMANAX')) {
+          if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
           c.fetchMessages().then(m => {
             let text = '';
             let date = new Date();
@@ -246,24 +247,26 @@ client.on('ready', () => {
     };
     setInterval(() => {
       T.get('statuses/user_timeline', optionsen, (err, data) => {
+        if (!data) return;
         let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === tweet) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === tweet)) return;
               c.send(tweet);
             });
           }
         });
       });
       T.get('statuses/user_timeline', optionsfr, (err, data) => {
+        if (!data) return;
         let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNONCES')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === tweet) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === tweet)) return;
               c.send(tweet);
             });
           }
@@ -275,24 +278,26 @@ client.on('ready', () => {
     if (!nconf.get('CHANNEL_ADS')) return;
     setInterval(() => {
       ytpl('UUJ_tz6Xl_YtrAHd3gqChhMA', {limit: 1}, (err, playlist) => {
+        if (!playlist) return;
         let vid = playlist.items[0].url_simple;
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ADS')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === vid) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === vid)) return;
               c.send(vid);
             });
           }
         });
       });
       ytpl('UUvNdYvCMA9FcjFAV2gg8R6A', {limit: 1}, (err, playlist) => {
+        if (!playlist) return;
         let vid = playlist.items[0].url_simple;
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ADS')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === vid) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === vid)) return;
               c.send(vid);
             });
           }
@@ -304,72 +309,78 @@ client.on('ready', () => {
     if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES')) return;
     setInterval(() => {
       parser.parseURL('https://www.dofus.com/en/rss/news.xml', (err, feed) => {
+        if (!feed) return;
         let post = feed.items[0].link.trim();
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === post)) return;
               c.send(post);
             });
           }
         });
       })
       parser.parseURL('https://www.dofus.com/en/rss/devblog.xml', (err, feed) => {
+        if (!feed) return;
         let post = feed.items[0].link.trim();
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === post)) return;
               c.send(post);
             });
           }
         });
       })
       parser.parseURL('https://www.dofus.com/en/rss/changelog.xml', (err, feed) => {
+        if (!feed) return;
         let post = feed.items[0].link.trim();
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === post)) return;
               c.send(post);
             });
           }
         });
       })
       parser.parseURL('https://www.dofus.com/fr/rss/news.xml', (err, feed) => {
+        if (!feed) return;
         let post = feed.items[0].link.trim();
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNONCES')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === post)) return;
               c.send(post);
             });
           }
         });
       })
       parser.parseURL('https://www.dofus.com/fr/rss/devblog.xml', (err, feed) => {
+        if (!feed) return;
         let post = feed.items[0].link.trim();
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNONCES')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === post)) return;
               c.send(post);
             });
           }
         });
       })
       parser.parseURL('https://www.dofus.com/fr/rss/changelog.xml', (err, feed) => {
+        if (!feed) return;
         let post = feed.items[0].link.trim();
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNONCES')) {
-            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false) return;
+            if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
-              if (msgs.find(m => m.content === post) || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+              if (msgs.find(m => m.content === post)) return;
               c.send(post);
             });
           }
@@ -378,10 +389,10 @@ client.on('ready', () => {
     }, 300000); // 300000 = 5 minutes
   }, 6000);
 });
-if (nconf.get('DELETE')) {
+if (nconf.get('CHANNEL_LOG')) {
   client.on('messageDelete', msg => {
-    if (msg.content[0] === '!' || msg.channel.guild.id !== '78581046714572800' || ['ads', 'almanax', 'annonces', 'announcements', 'madhouse'].includes(msg.channel.name)) return;
-    client.channels.find(c => c.id === '590904233650552833').send(embed.setAuthor(msg.author.username, msg.author.avatarURL).setDescription(msg.content).setFooter(`#${msg.channel.name}`).setTimestamp(msg.createdTimestamp).setColor(randomColor()));
+    if (msg.content[0] === '!' || !msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')) || ['ads', 'almanax', 'annonces', 'announcements', 'madhouse'].includes(msg.channel.name)) return;
+    msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')).send(embed.setAuthor(msg.author.username, msg.author.avatarURL).setDescription(msg.content).setImage(msg.attachments.first() ? msg.attachments.first().proxyURL : '').setFooter(`#${msg.channel.name}`).setTimestamp(msg.createdTimestamp).setColor(randomColor()));
   });
 }
 client.on('message', msg => {
