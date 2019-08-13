@@ -247,7 +247,7 @@ client.on('ready', () => {
     };
     setInterval(() => {
       T.get('statuses/user_timeline', optionsen, (err, data) => {
-        if (!data) return;
+        if (!data[0]) return;
         let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
@@ -260,7 +260,7 @@ client.on('ready', () => {
         });
       });
       T.get('statuses/user_timeline', optionsfr, (err, data) => {
-        if (!data) return;
+        if (!data[0]) return;
         let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNONCES')) {
