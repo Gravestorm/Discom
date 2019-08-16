@@ -234,20 +234,8 @@ client.on('ready', () => {
   }, 3000);
   setTimeout(() => {
     if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES') || !nconf.get('CONSUMER_KEY') || !nconf.get('CONSUMER_SECRET') || !nconf.get('ACCESS_TOKEN') || !nconf.get('ACCESS_TOKEN_SECRET')) return;
-    let optionsen = {
-      screen_name: 'DOFUS_EN',
-      exclude_replies: true,
-      include_rts: false,
-      count: 1
-    };
-    let optionsfr = {
-      screen_name: 'DOFUSfr',
-      exclude_replies: true,
-      include_rts: false,
-      count: 1
-    };
     setInterval(() => {
-      T.get('statuses/user_timeline', optionsen, (err, data) => {
+      T.get('statuses/user_timeline', {screen_name: 'DOFUS_EN', exclude_replies: true, include_rts: false, count: 1}, (err, data) => {
         if (!data[0]) return;
         let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
         client.channels.forEach(c => {
@@ -255,12 +243,15 @@ client.on('ready', () => {
             if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
               if (msgs.find(m => m.content === tweet)) return;
+              msgs.forEach(m => {
+                if (m.content.includes('https://twitter.com/') && m.author === client.user && !m.reactions.first()) m.delete();
+              });
               c.send(tweet);
             });
           }
         });
       });
-      T.get('statuses/user_timeline', optionsfr, (err, data) => {
+      T.get('statuses/user_timeline', {screen_name: 'DOFUSfr', exclude_replies: true, include_rts: false, count: 1}, (err, data) => {
         if (!data[0]) return;
         let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
         client.channels.forEach(c => {
@@ -268,6 +259,9 @@ client.on('ready', () => {
             if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
               if (msgs.find(m => m.content === tweet)) return;
+              msgs.forEach(m => {
+                if (m.content.includes('https://twitter.com/') && m.author === client.user && !m.reactions.first()) m.delete();
+              });
               c.send(tweet);
             });
           }
@@ -389,6 +383,22 @@ client.on('ready', () => {
       })
     }, 300000); // 300000 = 5 minutes
   }, 6000);
+  setTimeout(() => {
+    if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES') || !nconf.get('CHANNEL_ADS')) return;
+    setInterval(() => {
+      client.channels.forEach(c => {
+        if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS') || c.name === nconf.get('CHANNEL_ANNONCES') || c.name === nconf.get('CHANNEL_ADS')) {
+          if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+          c.fetchMessages().then(msgs => {
+            msgs.forEach(m => {
+              if (m.reactions.first() || m.author !== client.user || (new Date() - m.createdTimestamp) / 1000 < 604800) return;
+              m.delete();
+            });
+          });
+        }
+      });
+    }, 7200000); // 7200000 = 120 minutes
+  }, 7000);
 });
 if (nconf.get('CHANNEL_LOG')) {
   client.on('messageDelete', msg => {
