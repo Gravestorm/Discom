@@ -7,7 +7,7 @@ module.exports = (client) => {
   setInterval(() => {
     url.forEach(n => {
       ytpl(n, { limit: 1 }, (err, playlist) => {
-        if (!playlist || playlist.items[0] || new Date(playlist.last_updated).getTime() / 1000 > 604800) return;
+        if (!playlist || !playlist.items[0] || new Date(playlist.last_updated).getTime() / 1000 > 604800) return;
         let vid = playlist.items[0].url_simple;
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ADS')) {
