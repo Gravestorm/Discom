@@ -1,7 +1,9 @@
 import express from 'express';
 import nconf from 'nconf';
-export default function startExpress() {
-  const app = express();
+const app = express();
+
+module.exports = () => {
+  if (nconf.get('LOCAL')) return;
   if (!nconf.get('PORT')) nconf.set('PORT', 5000);
   app.set('port', (nconf.get('PORT')));
   app.use(express.static(__dirname + '/public'));

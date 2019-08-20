@@ -15,6 +15,7 @@
     "path": "^0.12.7",
     "randomcolor": "^0.5.4",
     "request-promise": "^4.2.4",
+    "require-all": "^3.0.0",
     "rss-parser": "^3.7.2",
     "twit": "^2.2.11",
     "ytpl": "^0.1.15"
@@ -23,7 +24,7 @@
     "start": "node -r esm index.js && forever start --minUptime 5000 --spinSleepTime 5000 index.js"
   },
   "engines": {
-    "node": "12.4.0",
-    "npm": "6.9.0"
+    "node": "12.8.1",
+    "npm": "6.10.3"
   }
 }
