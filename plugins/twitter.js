@@ -12,7 +12,7 @@ module.exports = (client) => {
   if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES') || !nconf.get('CONSUMER_KEY') || !nconf.get('CONSUMER_SECRET') || !nconf.get('ACCESS_TOKEN') || !nconf.get('ACCESS_TOKEN_SECRET')) return;
   setInterval(() => {
     T.get('statuses/user_timeline', { screen_name: 'DOFUS_EN', exclude_replies: true, include_rts: false, count: 1 }, (err, data) => {
-      if (!data[0]) return;
+      if (err || !data[0]) return;
       let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
       client.channels.forEach(c => {
         if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
@@ -28,7 +28,7 @@ module.exports = (client) => {
       });
     });
     T.get('statuses/user_timeline', { screen_name: 'DOFUSfr', exclude_replies: true, include_rts: false, count: 1 }, (err, data) => {
-      if (!data[0]) return;
+      if (err || !data[0]) return;
       let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`;
       client.channels.forEach(c => {
         if (c.name === nconf.get('CHANNEL_ANNONCES')) {

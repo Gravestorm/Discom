@@ -8,7 +8,7 @@ module.exports = (client) => {
   setInterval(() => {
     url.forEach(n => {
       P.parseURL(`https://www.dofus.com/en/rss/${n}.xml`, (err, feed) => {
-        if (!feed || !feed.items[0] || new Date(feed.items[0].isoDate).getTime() / 1000 > 604800) return;
+        if (err || !feed || (new Date - new Date(feed.items[0].isoDate).getTime()) / 1000 > 604800) return;
         let post = feed.items[0].link.trim();
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNOUNCEMENTS')) {
@@ -21,7 +21,7 @@ module.exports = (client) => {
         });
       })
       P.parseURL(`https://www.dofus.com/fr/rss/${n}.xml`, (err, feed) => {
-        if (!feed || !feed.items[0] || new Date(feed.items[0].isoDate).getTime() / 1000 > 604800) return;
+        if (err || !feed || (new Date - new Date(feed.items[0].isoDate).getTime()) / 1000 > 604800) return;
         let post = feed.items[0].link.trim();
         client.channels.forEach(c => {
           if (c.name === nconf.get('CHANNEL_ANNONCES')) {
