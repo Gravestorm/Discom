@@ -14,10 +14,9 @@ module.exports = {
   CHANNEL_ADS: 'ads',
   CHANNEL_ALMANAX: 'almanax',
   CHANNEL_LOG: 'madhouse',
-  // Nitro Booster/Streaming/Streamer role names.
+  // Nitro Booster/Streaming/Streamer/CareBear role names.
   ROLE_NITRO: '✨Nitro Booster✨',
   ROLE_STREAMING: '🎥Streaming🎥',
-  ROLE_STREAMER: '🎥Streamer🎥'
-  // Clean nickname functionality.
-  NICKNAME: 'true'
+  ROLE_STREAMER: '🎥Streamer🎥',
+  ROLE_NICKNAME: 'CareBear'
 };
