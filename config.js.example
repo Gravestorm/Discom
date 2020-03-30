@@ -18,4 +18,6 @@ module.exports = {
   ROLE_NITRO: '✨Nitro Booster✨',
   ROLE_STREAMING: '🎥Streaming🎥',
   ROLE_STREAMER: '🎥Streamer🎥'
+  // Clean nickname functionality.
+  NICKNAME: 'true'
 };

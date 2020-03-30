@@ -20,7 +20,7 @@ module.exports = (client) => {
           c.fetchMessages().then(msgs => {
             if (msgs.find(m => m.content === tweet)) return;
             msgs.forEach(m => {
-              if (m.content.includes('https://twitter.com/') && m.author === client.user && !m.reactions.first()) m.delete();
+              if (m.content.includes('https://twitter.com/') && m.author === client.user) m.delete();
             });
             c.send(tweet);
           });
@@ -36,7 +36,7 @@ module.exports = (client) => {
           c.fetchMessages().then(msgs => {
             if (msgs.find(m => m.content === tweet)) return;
             msgs.forEach(m => {
-              if (m.content.includes('https://twitter.com/') && m.author === client.user && !m.reactions.first()) m.delete();
+              if (m.content.includes('https://twitter.com/') && m.author === client.user) m.delete();
             });
             c.send(tweet);
           });

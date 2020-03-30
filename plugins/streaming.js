@@ -32,5 +32,5 @@ module.exports = (client) => {
         }
       });
     });
-  }, 60000); // 60000 = 1 minute
+  }, 120000); // 120000 = 2 minutes
 }

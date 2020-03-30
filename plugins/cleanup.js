@@ -8,8 +8,9 @@ module.exports = (client) => {
         if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
         c.fetchMessages().then(msgs => {
           msgs.forEach(m => {
-            if (m.reactions.first() || m.author !== client.user || (new Date() - m.createdTimestamp) / 1000 < 604800) return;
-            m.delete();
+            if (c.name === nconf.get('CHANNEL_ADS') && (new Date() - m.createdTimestamp) / 1000 > 5000000) m.delete();
+            if (m.author === client.user && (new Date() - m.createdTimestamp) / 1000 > 5000000) m.delete();
+            return;
           });
         });
       }
