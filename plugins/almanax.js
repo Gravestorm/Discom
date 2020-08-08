@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import cheerio from 'cheerio';
 import nconf from 'nconf';
 import rp from 'request-promise';
@@ -48,7 +49,13 @@ module.exports = (client) => {
                   let bonusfr = $('#achievement_dofus .mid .more').first().children().remove('div.more-infos').end().text().trim();
                   let mainfr = $('#achievement_dofus .mid').first().children().remove('div.more').end().text().trim();
                   text += `\n\n\n**${mainfr}**\n${bonusfr}\n\n**${questfr}**\n${offerfr}\n\n${image}`;
-                  c.send(text);
+                  c.send(text).then(m => {
+                    fetch(`https://discord.com/api/v6/channels/${m.channel.id}/messages/${m.id}/crosspost`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bot ${nconf.get('TOKEN')}` }
+                      }
+                    )
+                  });
                 });
               });
             }
@@ -80,7 +87,13 @@ module.exports = (client) => {
                 let bonusfr = $('#achievement_dofus .mid .more').first().children().remove('div.more-infos').end().text().trim();
                 let mainfr = $('#achievement_dofus .mid').first().children().remove('div.more').end().text().trim();
                 text += `\n\n\n**${mainfr}**\n${bonusfr}\n\n**${questfr}**\n${offerfr}\n\n${image}`;
-                c.send(text);
+                c.send(text).then(m => {
+                  fetch(`https://discord.com/api/v6/channels/${m.channel.id}/messages/${m.id}/crosspost`, {
+                      method: 'POST',
+                      headers: { Authorization: `Bot ${nconf.get('TOKEN')}` }
+                    }
+                  )
+                });
               });
             });
           }

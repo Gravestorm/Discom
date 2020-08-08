@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import nconf from 'nconf';
 import parser from 'rss-parser';
 const P = new parser();
@@ -15,7 +16,13 @@ module.exports = (client) => {
             if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
               if (msgs.find(m => m.content === post)) return;
-              c.send(post);
+              c.send(post).then(m => {
+                fetch(`https://discord.com/api/v6/channels/${m.channel.id}/messages/${m.id}/crosspost`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bot ${nconf.get('TOKEN')}` }
+                  }
+                )
+              });
             });
           }
         });
@@ -28,7 +35,13 @@ module.exports = (client) => {
             if (c.permissionsFor(client.user).has('VIEW_CHANNEL') === false || c.permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
             c.fetchMessages().then(msgs => {
               if (msgs.find(m => m.content === post)) return;
-              c.send(post);
+              c.send(post).then(m => {
+                fetch(`https://discord.com/api/v6/channels/${m.channel.id}/messages/${m.id}/crosspost`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bot ${nconf.get('TOKEN')}` }
+                  }
+                )
+              });
             });
           }
         });
