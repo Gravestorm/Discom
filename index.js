@@ -25,7 +25,7 @@ client.on('ready', () => {
 
 if (nconf.get('CHANNEL_LOG')) {
   client.on('messageDelete', msg => {
-    if (msg.content[0] === '!' || !msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')) || ['ads', 'almanax', 'annonces', 'announcements', 'madhouse'].includes(msg.channel.name) || msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')).permissionsFor(client.user).has('VIEW_CHANNEL') === false || msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')).permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
+    if (msg.content[0] === '!' || !msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')) || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse'].includes(msg.channel.name) || msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')).permissionsFor(client.user).has('VIEW_CHANNEL') === false || msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')).permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
     msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')).send(embed.setAuthor(msg.author.username, msg.author.avatarURL).setDescription(msg.content).setImage(msg.attachments.first() ? msg.attachments.first().proxyURL : '').setFooter(`#${msg.channel.name}`).setTimestamp(msg.createdTimestamp).setColor(random()));
   });
 }
