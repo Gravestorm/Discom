@@ -1,47 +1,42 @@
-import './init-config';
-import Discord from 'discord.js';
-import fs from 'fs';
-import nconf from 'nconf';
-import random from 'randomcolor';
-import requireAll from 'require-all';
-const client = new Discord.Client();
-const embed = new Discord.RichEmbed();
-const commands = requireAll({ dirname: `${__dirname}/commands`, filter: /^(?!-)(.+)\.js$/ });
-const plugins = requireAll({ dirname: `${__dirname}/plugins`, filter: /^(?!-)(.+)\.js$/ });
-client.commands = new Map();
-client.aliases = new Map();
-
-for (const name in commands) {
-  const command = commands[name];
-  client.commands.set(command.config.name, command);
-  for (const a of command.config.aliases) client.aliases.set(a, command.config.name);
-}
+const { Client, Collection, Intents, MessageEmbed } = require('discord.js')
+const fs = require('node:fs')
+const path = require('node:path')
+const random = require('randomcolor')
+const requireAll = require('require-all')
+const nconf = require('nconf')
+nconf.use('memory')
+nconf.argv().env()
+if (fs.existsSync(path.join(__dirname, './config.js'))) nconf.defaults(require(path.join(__dirname, './config.js')))
+const plugins = requireAll({ dirname: `${__dirname}/plugins`, filter: /^(?!-)(.+)\.js$/ })
+const commands = requireAll({ dirname: `${__dirname}/commands`, filter: /^(?!-)(.+)\.js$/ })
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_MESSAGES] })
+client.commands = new Collection()
+for (const name in commands) client.commands.set(commands[name].data.name, commands[name])
 
 client.on('ready', () => {
-  for (const name in plugins) {
-    plugins[name](client);
-  }
-});
+  console.log('Connected')
+  for (const name in plugins) plugins[name](client)
+})
+
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isCommand() || !client.commands.get(interaction.commandName)) return
+  try { await client.commands.get(interaction.commandName).execute(interaction) } catch (error) { console.error(error), await interaction.reply({ content: 'Command Error', ephemeral: true }) }
+})
 
 if (nconf.get('CHANNEL_LOG')) {
-  client.on('messageDelete', msg => {
-    if (msg.content[0] === '!' || !msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')) || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse'].includes(msg.channel.name) || msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')).permissionsFor(client.user).has('VIEW_CHANNEL') === false || msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')).permissionsFor(client.user).has('SEND_MESSAGES') === false) return;
-    msg.guild.channels.find(c => c.name === nconf.get('CHANNEL_LOG')).send(embed.setAuthor(msg.author.username, msg.author.avatarURL).setDescription(msg.content).setImage(msg.attachments.first() ? msg.attachments.first().proxyURL : '').setFooter(`#${msg.channel.name}`).setTimestamp(msg.createdTimestamp).setColor(random()));
-  });
+  client.on('messageDelete', m => {
+    if (['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse'].includes(m.channel.name) || !m.guild.channels.fetch(nconf.get('CHANNEL_LOG')) || m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
+    m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send({ embeds: [new MessageEmbed().setAuthor({ name: m.author.username, iconURL: m.author.displayAvatarURL() }).setDescription(m.content).setImage(m.attachments.first() ? m.attachments.first().proxyURL : '').setFooter({ text: `#${m.channel.name}` }).setTimestamp(m.createdTimestamp).setColor(random())] }))
+  })
 }
 
-client.on('message', msg => {
-  const suffix = msg.content.slice(1).split(/ +/);
-  const command = suffix.shift().toLowerCase();
-  const cmd = client.commands.get(command) || client.commands.get(client.aliases.get(command));
-  if (cmd && msg.content[0] === '!' && msg.channel.type !== 'dm' && msg.author.bot !== true) {
-    cmd.run(client, msg, suffix, embed);
-  }
-});
+client.on('rateLimit', r => {
+  console.log(`Timeout: ${r.timeout}ms   Request Limit: ${r.limit}   Method: ${r.method}   Path: ${r.path}   Route: ${r.route}   Global: ${r.global}`)
+})
 
 client.on('disconnected', () => {
-  console.log('Disconnected');
-  setTimeout(() => { client.login(nconf.get('TOKEN')) }, 5000);
-});
+  console.log('Disconnected')
+  setTimeout(() => { client.login(nconf.get('TOKEN')) }, 5000)
+})
 
-client.login(nconf.get('TOKEN'));
+client.login(nconf.get('TOKEN'))

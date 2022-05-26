@@ -1,22 +1,15 @@
-import nconf from 'nconf';
-import random from 'randomcolor';
+const { SlashCommandBuilder } = require('@discordjs/builders')
+const nconf = require('nconf')
+const random = require('randomcolor')
 
-module.exports.run = (client, msg, suffix) => {
-  msg.delete();
-  if (!nconf.get('ROLE_NITRO')) return;
-  msg.guild.fetchMembers().then(g => {
-    if (g.me.permissions.has('MANAGE_ROLES') && msg.member.permissions.has('VIEW_AUDIT_LOG') && g.roles.find(r => r.name === nconf.get('ROLE_NITRO'))) {
-      if (!suffix[0]) suffix[0] = 'random';
-      if (!suffix[1]) suffix[1] = 'bright';
-      g.roles.find(r => r.name === nconf.get('ROLE_NITRO')).setColor(random({
-        hue: suffix[0],
-        luminosity: suffix[1]
-      }));
-    }
-  });
-};
-
-module.exports.config = {
-  name: 'colour',
-  aliases: ['c', 'color']
-};
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('c')
+    .setDescription('Change the colour of the Nitro Booster role to a random or specific colour')
+    .addStringOption(option => option.setName('hue').setDescription('Write a colour name or hex code'))
+    .addStringOption(option => option.setName('luminosity').setDescription('Choose the brightness of the colour').addChoices({ name: 'Bright', value: 'bright' }).addChoices({ name: 'Light', value: 'light' }).addChoices({ name: 'Dark', value: 'dark' })),
+  async execute(interaction) {
+    await interaction.guild.roles.resolve(nconf.get('ROLE_NITRO')).setColor(random({ luminosity: interaction.options.getString('luminosity') ? interaction.options.getString('luminosity') : 'random', hue: interaction.options.getString('hue') ? interaction.options.getString('hue') : 'random' }))
+    await interaction.reply({ content: 'Colour changed successfully.', ephemeral: true })
+  }
+}

@@ -1,36 +1,15 @@
-import nconf from 'nconf';
+const nconf = require('nconf')
 
 module.exports = (client) => {
-  if (!nconf.get('ROLE_STREAMING')) return;
+  if (!nconf.get('ROLE_STREAMING') || !nconf.get('SERVER')) return
   setInterval(() => {
-    client.guilds.forEach(g => {
-      g.fetchMembers().then(g => {
-        if (g.me.permissions.has('MANAGE_ROLES') && g.roles.find(r => r.name === nconf.get('ROLE_STREAMER')) && g.roles.find(r => r.name === nconf.get('ROLE_STREAMING'))) {
-          g.members.forEach(m => {
-            if (m.roles.has(g.roles.find(r => r.name === nconf.get('ROLE_STREAMER')).id) === true && m.roles.has(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id) !== true && m.user.presence.game && m.user.presence.game.streaming === true) {
-              m.addRole(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id);
-            } else if (m.roles.has(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id) === true) {
-              if (!m.user.presence.game) {
-                m.removeRole(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id);
-              } else if (m.user.presence.game && m.user.presence.game.streaming !== true) {
-                m.removeRole(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id);
-              }
-            }
-          });
-        } else if (g.me.permissions.has('MANAGE_ROLES') && g.roles.find(r => r.name === nconf.get('ROLE_STREAMING'))) {
-          g.members.forEach(m => {
-            if (m.roles.has(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id) !== true && m.user.presence.game && m.user.presence.game.streaming === true) {
-              m.addRole(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id);
-            } else if (m.roles.has(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id) === true) {
-              if (!m.user.presence.game) {
-                m.removeRole(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id);
-              } else if (m.user.presence.game && m.user.presence.game.streaming !== true) {
-                m.removeRole(g.roles.find(r => r.name === nconf.get('ROLE_STREAMING')).id);
-              }
-            }
-          });
-        }
-      });
-    });
-  }, 120000); // 120000 = 2 minutes
+  client.guilds.fetch(nconf.get('SERVER')).then(g => g.members.fetch().then(() => {
+    g.roles.cache.get(nconf.get('ROLE_STREAMER')).members.map(m => {
+      let stream
+      m.presence?.activities.forEach(a => { if (a.type.toLowerCase() === 'streaming') stream = true })
+      if (m.roles.resolve(nconf.get('ROLE_STREAMING')) === null && stream === true) m.roles.add(g.roles.resolve(nconf.get('ROLE_STREAMING')))
+      if (m.roles.resolve(nconf.get('ROLE_STREAMING')) !== null && stream !== true) m.roles.remove(g.roles.resolve(nconf.get('ROLE_STREAMING')))
+    })
+  }))
+  }, 120000) // 120000 = 2 minutes
 }

@@ -1,31 +1,37 @@
 {
-  "name": "Discom",
-  "version": "0.0.0",
+  "name": "discom",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "bluebird": "^3.7.2",
-    "cheerio": "^0.22.0",
+    "@discordjs/builders": "^0.13.0",
+    "@discordjs/rest": "^0.4.1",
+    "cheerio": "^1.0.0-rc.11",
     "cleverbot": "^1.0.1",
-    "discord.js": "^11.6.3",
+    "cron": "^2.0.0",
+    "discord-api-types": "^0.32.1",
+    "discord.js": "^13.7.0",
     "esm": "^3.2.25",
-    "express": "^4.17.1",
-    "forever": "^1.0.1",
-    "nconf": "^0.10.0",
-    "node-fetch": "^2.6.0",
-    "path": "^0.12.7",
-    "randomcolor": "^0.5.4",
-    "request-promise": "^4.2.5",
+    "express": "^4.18.1",
+    "forever": "^4.0.3",
+    "nconf": "^0.12.0",
+    "randomcolor": "^0.6.2",
+    "request-promise": "^4.2.6",
     "require-all": "^3.0.0",
-    "rss-parser": "^3.7.6",
+    "rss-parser": "^3.12.0",
     "twit": "^2.2.11",
-    "ytpl": "^0.1.20"
+    "ytpl": "^2.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.16"
   },
   "scripts": {
-    "start": "node -r esm index.js && forever start --minUptime 5000 --spinSleepTime 5000 index.js"
+    "start": "node -r esm index.js && forever start --minUptime 5000 --spinSleepTime 5000 index.js",
+    "dev": "nodemon index.js",
+    "commands": "node commands.js"
   },
   "engines": {
-    "node": "12.8.1",
-    "npm": "6.10.3"
+    "node": "18.2.0",
+    "npm": "8.9.0"
   }
 }

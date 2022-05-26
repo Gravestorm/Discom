@@ -8,15 +8,23 @@ module.exports = {
   CONSUMER_SECRET: '',
   ACCESS_TOKEN: '',
   ACCESS_TOKEN_SECRET: '',
-  // Announcements/Annonces/Ads/Almanax/Log channel names.
-  CHANNEL_ANNOUNCEMENTS: 'announcements',
-  CHANNEL_ANNONCES: 'annonces',
-  CHANNEL_ADS: 'ads',
-  CHANNEL_ALMANAX: 'almanax',
-  CHANNEL_LOG: 'madhouse',
-  // Nitro Booster/Streaming/Streamer/CareBear role names.
-  ROLE_NITRO: '✨Nitro Booster✨',
-  ROLE_STREAMING: '🎥Streaming🎥',
-  ROLE_STREAMER: '🎥Streamer🎥',
-  ROLE_NICKNAME: 'CareBear'
-};
+  // Client/Bot ID
+  CLIENT: '',
+  // Server/Guild ID
+  SERVER: '',
+  // Announcements/Annonces/Ads/Almanax/Log channel IDs.
+  CHANNEL_ANNOUNCEMENTS: '',
+  CHANNEL_ANNONCES: '',
+  CHANNEL_ADS: '',
+  CHANNEL_ALMANAX: '',
+  CHANNEL_LOG: '',
+  // Nitro Booster/Streamer/Streaming role IDs.
+  ROLE_NITRO: '',
+  ROLE_STREAMER: '',
+  ROLE_STREAMING: '',
+  // Nickname/Mirror plugins.
+  NICKNAME: '',
+  MIRROR: '',
+  // Local install.
+  LOCAL: ''
+}
