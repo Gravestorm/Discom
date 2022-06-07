@@ -8,7 +8,5 @@ module.exports = () => {
   app.set('port', (nconf.get('PORT')))
   app.use(express.static(__dirname + '/public'))
   app.set('views', __dirname + '/views')
-  app.listen(app.get('port'), () => {
-    console.log('Express connected ', app.get('port'))
-  })
+  app.listen(app.get('port'), () => { console.log('Express connected ', app.get('port')) })
 }

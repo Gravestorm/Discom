@@ -1,11 +1,11 @@
 const cheerio = require('cheerio')
-const CronJob = require('cron').CronJob
+const cron = require('cron').CronJob
 const nconf = require('nconf')
 const request = require('request-promise')
 
 module.exports = (client) => {
   if (!nconf.get('CHANNEL_ALMANAX')) return
-  new CronJob({
+  new cron({
     cronTime: '00 00 00 * * *',
     onTick: () => {
       client.channels.fetch(nconf.get('CHANNEL_ALMANAX')).then(c => c.messages.fetch({ limit: 1 }).then(m => m.last().delete()))

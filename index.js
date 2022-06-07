@@ -30,9 +30,7 @@ if (nconf.get('CHANNEL_LOG')) {
   })
 }
 
-client.on('rateLimit', r => {
-  console.log(`Timeout: ${r.timeout}ms   Request Limit: ${r.limit}   Method: ${r.method}   Path: ${r.path}   Route: ${r.route}   Global: ${r.global}`)
-})
+client.on('rateLimit', r => { console.log(`Timeout: ${r.timeout}ms   Request Limit: ${r.limit}   Method: ${r.method}   Path: ${r.path}   Route: ${r.route}   Global: ${r.global}`) })
 
 client.on('disconnected', () => {
   console.log('Disconnected')

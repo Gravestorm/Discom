@@ -16,9 +16,7 @@ module.exports = (client) => {
       let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`
       client.channels.fetch(nconf.get('CHANNEL_ANNOUNCEMENTS')).then(c => c.messages.fetch().then(msgs => {
         if (msgs.find(m => m.content === tweet)) return
-        msgs.forEach(m => {
-          if (m.content.includes('https://twitter.com/') && m.author === client.user) m.delete()
-        })
+        msgs.forEach(m => { if (m.content.includes('https://twitter.com/') && m.author === client.user) m.delete() })
         c.send(tweet)
       }))
     })
@@ -27,9 +25,7 @@ module.exports = (client) => {
       let tweet = `https://twitter.com/${data[0].user.screen_name}/status/${data[0].id_str}`
       client.channels.fetch(nconf.get('CHANNEL_ANNONCES')).then(c => c.messages.fetch().then(msgs => {
         if (msgs.find(m => m.content === tweet)) return
-        msgs.forEach(m => {
-          if (m.content.includes('https://twitter.com/') && m.author === client.user) m.delete()
-        })
+        msgs.forEach(m => { if (m.content.includes('https://twitter.com/') && m.author === client.user) m.delete() })
         c.send(tweet)
       }))
     })

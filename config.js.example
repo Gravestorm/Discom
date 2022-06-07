@@ -8,6 +8,8 @@ module.exports = {
   CONSUMER_SECRET: '',
   ACCESS_TOKEN: '',
   ACCESS_TOKEN_SECRET: '',
+  // User token.
+  USER: '',
   // Client/Bot ID
   CLIENT: '',
   // Server/Guild ID
@@ -22,9 +24,8 @@ module.exports = {
   ROLE_NITRO: '',
   ROLE_STREAMER: '',
   ROLE_STREAMING: '',
-  // Nickname/Mirror plugins.
+  // Nickname plugin.
   NICKNAME: '',
-  MIRROR: '',
   // Local install.
   LOCAL: ''
 }
