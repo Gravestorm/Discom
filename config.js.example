@@ -1,31 +1,56 @@
 module.exports = {
   // Bot token. https://discordapp.com/developers/applications/me
+  // Used for logging in. Required for adding commands to the server with commands.js.
   TOKEN: '',
+
+  // Bot Client ID.
+  // Required for adding commands to the server with commands.js.
+  CLIENT: '',
+
+  // Server ID.
+  // Used for the leaderboard/info commands, fetch/nickname/nitro/streaming plugins and for logging deleted messages in index.js.
+  // Required for adding commands to the server with commands.js.
+  SERVER: '',
+
+  // User tokens.
+  // Used for the leaderboard/info commands and the fetch plugin.
+  USER: '',
+  USER2: '',
+  USER3: '',
+
   // Cleverbot key. https://www.cleverbot.com/api
+  // Used for the chat command.
   CLEVERBOT: '',
+
   // Twitter keys. https://developer.twitter.com/en/apps
+  // Used for the twitter plugin.
   CONSUMER_KEY: '',
   CONSUMER_SECRET: '',
   ACCESS_TOKEN: '',
   ACCESS_TOKEN_SECRET: '',
-  // User token.
-  USER: '',
-  // Client/Bot ID
-  CLIENT: '',
-  // Server/Guild ID
-  SERVER: '',
+
   // Announcements/Annonces/Ads/Almanax/Log channel IDs.
+  // Used for the cleanup/rss/twitter/youtube plugins.
   CHANNEL_ANNOUNCEMENTS: '',
   CHANNEL_ANNONCES: '',
   CHANNEL_ADS: '',
+  // Used for the almanax plugin.
   CHANNEL_ALMANAX: '',
+  // Used for logging deleted messages in index.js.
   CHANNEL_LOG: '',
+
   // Nitro Booster/Streamer/Streaming role IDs.
+  // Used for the colour command and the nitro plugin.
   ROLE_NITRO: '',
+  // Used for the streaming plugin.
   ROLE_STREAMER: '',
   ROLE_STREAMING: '',
-  // Nickname plugin.
+
+  // Other variables. Can enter anything to enable.
+  // Used for the nickname plugin.
   NICKNAME: '',
-  // Local install.
+  // Used for the rules command.
+  RULES: '',
+  // Used for the express plugin.
   LOCAL: ''
 }

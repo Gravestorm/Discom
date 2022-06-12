@@ -1,15 +1,15 @@
 const nconf = require('nconf')
 const twit = require('twit')
-const T = new twit({
-  consumer_key: nconf.get('CONSUMER_KEY'),
-  consumer_secret: nconf.get('CONSUMER_SECRET'),
-  access_token: nconf.get('ACCESS_TOKEN'),
-  access_token_secret: nconf.get('ACCESS_TOKEN_SECRET'),
-  timeout_ms: 60 * 1000
-})
 
 module.exports = (client) => {
   if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES') || !nconf.get('CONSUMER_KEY') || !nconf.get('CONSUMER_SECRET') || !nconf.get('ACCESS_TOKEN') || !nconf.get('ACCESS_TOKEN_SECRET')) return
+  const T = new twit({
+    consumer_key: nconf.get('CONSUMER_KEY'),
+    consumer_secret: nconf.get('CONSUMER_SECRET'),
+    access_token: nconf.get('ACCESS_TOKEN'),
+    access_token_secret: nconf.get('ACCESS_TOKEN_SECRET'),
+    timeout_ms: 60 * 1000
+  })
   setInterval(() => {
     T.get('statuses/user_timeline', { screen_name: 'DOFUS_EN', exclude_replies: true, include_rts: false, count: 1 }, (err, data) => {
       if (err || !data[0]) return
