@@ -9,7 +9,7 @@ nconf.argv().env()
 if (fs.existsSync(path.join(__dirname, './config.js'))) nconf.defaults(require(path.join(__dirname, './config.js')))
 const plugins = requireAll({ dirname: `${__dirname}/plugins`, filter: /^(?!-)(.+)\.js$/ })
 const commands = requireAll({ dirname: `${__dirname}/commands`, filter: /^(?!-)(.+)\.js$/ })
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_MESSAGES] })
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_BANS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_MESSAGES] })
 client.commands = new Collection()
 for (const name in commands) client.commands.set(commands[name].data.name, commands[name])
 
@@ -28,6 +28,11 @@ if (nconf.get('CHANNEL_LOG') && nconf.get('SERVER')) {
   client.on('messageDeleteBulk', msgs => {
     if (msgs.first().guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror'].includes(msgs.first().channel.name) || !msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')) || msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
     msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => msgs.reverse().forEach(m => c.send({ embeds: [new MessageEmbed().setAuthor({ name: m.author.username, iconURL: m.author.displayAvatarURL() }).setDescription(m.content).setImage(m.attachments.first() ? m.attachments.first().proxyURL : '').setFooter({ text: `#${m.channel.name}` }).setTimestamp(m.createdTimestamp).setColor(random())] })))
+  })
+  client.on('guildBanAdd', async ban => {
+    if (ban.guild.id !== nconf.get('SERVER') || !ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')) || ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
+    const log = await ban.guild.fetchAuditLogs({ limit: 1, type: 'MEMBER_BAN_ADD' })
+    log.entries.first().target.id === ban.user.id ? ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send(`${ban.user.username}#${ban.user.discriminator} (${ban.user.id}) has been killed by <@${log.entries.first().executor.id}> on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })}${log.entries.first().reason ? ` for ${log.entries.first().reason}` : ' for fun'}`)) : ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send(`${ban.user.username}#${ban.user.discriminator} (${ban.user.id}) has been killed by a mysterious fellow without any witnesses`))
   })
 }
 

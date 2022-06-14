@@ -8,12 +8,12 @@ module.exports = {
   CLIENT: '',
 
   // Server ID.
-  // Used for the leaderboard/info commands, fetch/nickname/nitro/streaming plugins and for logging deleted messages in index.js.
+  // Used for the info command, the fetch/nickname/nitro/streaming plugins and for logging deleted messages in index.js.
   // Required for adding commands to the server with commands.js.
   SERVER: '',
 
   // User tokens.
-  // Used for the leaderboard/info commands and the fetch plugin.
+  // Used for the info command and the fetch plugin.
   USER: '',
   USER2: '',
   USER3: '',
@@ -38,13 +38,24 @@ module.exports = {
   CHANNEL_ALMANAX: '',
   // Used for logging deleted messages in index.js.
   CHANNEL_LOG: '',
+  // Used for the leaderboard plugin.
+  CHANNEL_LEADERBOARD: '',
 
-  // Nitro Booster/Streamer/Streaming role IDs.
+  // Nitro Booster/Streamer/Streaming/Leaderboard role IDs.
   // Used for the colour command and the nitro plugin.
   ROLE_NITRO: '',
   // Used for the streaming plugin.
   ROLE_STREAMER: '',
   ROLE_STREAMING: '',
+  // Used for the info command and the fetch plugin.
+  ROLE_IRON: '',
+  ROLE_BRONZE: '',
+  ROLE_SILVER: '',
+  ROLE_GOLD: '',
+  ROLE_CRYSTAL: '',
+  ROLE_DIAMOND: '',
+  ROLE_LEGEND: '',
+  ROLE_OMEGA: '',
 
   // Other variables. Can enter anything to enable.
   // Used for the nickname plugin.
