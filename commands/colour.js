@@ -9,6 +9,6 @@ module.exports = {
   async execute(interaction) {
     if (!nconf.get('ROLE_NITRO')) return
     await interaction.guild.roles.resolve(nconf.get('ROLE_NITRO')).setColor(random({ luminosity: interaction.options.getString('luminosity') ? interaction.options.getString('luminosity') : 'random', hue: interaction.options.getString('hue') ? interaction.options.getString('hue') : 'random' }))
-    await interaction.reply({ content: 'Colour changed successfully.', ephemeral: true })
+    await interaction.reply({ content: 'Colour changed successfully.\nLa couleur a changé avec succès.', ephemeral: true })
   }
 }

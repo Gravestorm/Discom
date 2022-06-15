@@ -29,17 +29,19 @@ module.exports = {
   ACCESS_TOKEN: '',
   ACCESS_TOKEN_SECRET: '',
 
-  // Announcements/Annonces/Ads/Almanax/Log channel IDs.
+  // Announcements/Annonces/Ads/Almanax/Bot/Leaderboard/Log channel IDs.
   // Used for the cleanup/rss/twitter/youtube plugins.
   CHANNEL_ANNOUNCEMENTS: '',
   CHANNEL_ANNONCES: '',
   CHANNEL_ADS: '',
   // Used for the almanax plugin.
   CHANNEL_ALMANAX: '',
-  // Used for logging deleted messages in index.js.
-  CHANNEL_LOG: '',
+  // Used for the ads command.
+  CHANNEL_BOT: '',
   // Used for the leaderboard plugin.
   CHANNEL_LEADERBOARD: '',
+  // Used for logging deleted messages in index.js.
+  CHANNEL_LOG: '',
 
   // Nitro Booster/Streamer/Streaming/Leaderboard role IDs.
   // Used for the colour command and the nitro plugin.
@@ -49,12 +51,14 @@ module.exports = {
   ROLE_STREAMING: '',
   // Used for the info command and the fetch plugin.
   ROLE_IRON: '',
+  ROLE_COPPER: '',
   ROLE_BRONZE: '',
   ROLE_SILVER: '',
   ROLE_GOLD: '',
   ROLE_CRYSTAL: '',
   ROLE_DIAMOND: '',
   ROLE_LEGEND: '',
+  ROLE_EPIC: '',
   ROLE_OMEGA: '',
 
   // Other variables. Can enter anything to enable.
