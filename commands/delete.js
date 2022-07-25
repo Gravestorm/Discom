@@ -4,7 +4,7 @@ const nconf = require('nconf')
 const random = require('randomcolor')
 
 module.exports = {
-  data: new SlashCommandBuilder().setName('d').setDescription('Delete a number of messages in this channel, optionally from a user and/or move them to a channel')
+  data: new SlashCommandBuilder().setName('delete').setDescription('Delete a number of messages in this channel, optionally from a user and/or move them to a channel')
     .addNumberOption(option => option.setName('number').setDescription('Number of messages').setRequired(true))
     .addUserOption(option => option.setName('user').setDescription('Select a user'))
     .addChannelOption(option => option.setName('channel').setDescription('Select a channel')),

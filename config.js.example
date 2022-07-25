@@ -36,11 +36,11 @@ module.exports = {
   CHANNEL_ADS: '',
   // Used for the almanax plugin.
   CHANNEL_ALMANAX: '',
-  // Used for the ads command.
+  // Used for the ads/warn commands.
   CHANNEL_BOT: '',
   // Used for the leaderboard plugin.
   CHANNEL_LEADERBOARD: '',
-  // Used for logging deleted messages in index.js.
+  // Used for the warn command and logging deleted messages/banned users in index.js.
   CHANNEL_LOG: '',
 
   // Nitro Booster/Streamer/Streaming/Leaderboard role IDs.
@@ -49,6 +49,8 @@ module.exports = {
   // Used for the streaming plugin.
   ROLE_STREAMER: '',
   ROLE_STREAMING: '',
+  // Used for the image command.
+  ROLE_IMAGE: '',
   // Used for the info command and the fetch plugin.
   ROLE_IRON: '',
   ROLE_COPPER: '',

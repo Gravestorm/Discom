@@ -1,9 +1,11 @@
 const { Client, Collection, Intents, MessageEmbed } = require('discord.js')
 const fs = require('node:fs')
+const nconf = require('nconf')
 const path = require('node:path')
+const promise = require('bluebird')
+const delay = ms => new promise(resolve => setTimeout(resolve, ms))
 const random = require('randomcolor')
 const requireAll = require('require-all')
-const nconf = require('nconf')
 nconf.use('memory')
 nconf.argv().env()
 if (fs.existsSync(path.join(__dirname, './config.js'))) nconf.defaults(require(path.join(__dirname, './config.js')))
@@ -22,17 +24,19 @@ client.on('interactionCreate', async interaction => {
 
 if (nconf.get('CHANNEL_LOG') && nconf.get('SERVER')) {
   client.on('messageDelete', m => {
-    if (m.guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror'].includes(m.channel.name) || !m.guild.channels.fetch(nconf.get('CHANNEL_LOG')) || m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
+    if (m.guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror', 'leaderboard'].includes(m.channel.name) || !m.guild.channels.fetch(nconf.get('CHANNEL_LOG')) || m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
     m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send({ embeds: [new MessageEmbed().setAuthor({ name: m.author.username, iconURL: m.author.displayAvatarURL() }).setDescription(m.content).setImage(m.attachments.first() ? m.attachments.first().proxyURL : '').setFooter({ text: `#${m.channel.name}` }).setTimestamp(m.createdTimestamp).setColor(random())] }))
   })
   client.on('messageDeleteBulk', msgs => {
-    if (msgs.first().guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror'].includes(msgs.first().channel.name) || !msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')) || msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
+    if (msgs.first().guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror', 'leaderboard'].includes(msgs.first().channel.name) || !msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')) || msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
     msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => msgs.reverse().forEach(m => c.send({ embeds: [new MessageEmbed().setAuthor({ name: m.author.username, iconURL: m.author.displayAvatarURL() }).setDescription(m.content).setImage(m.attachments.first() ? m.attachments.first().proxyURL : '').setFooter({ text: `#${m.channel.name}` }).setTimestamp(m.createdTimestamp).setColor(random())] })))
   })
   client.on('guildBanAdd', async ban => {
     if (ban.guild.id !== nconf.get('SERVER') || !ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')) || ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
-    const log = await ban.guild.fetchAuditLogs({ limit: 1, type: 'MEMBER_BAN_ADD' })
-    log.entries.first().target.id === ban.user.id ? ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send(`${ban.user.username}#${ban.user.discriminator} (${ban.user.id}) has been killed by <@${log.entries.first().executor.id}> on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })}${log.entries.first().reason ? ` for ${log.entries.first().reason}` : ' for fun'}`)) : ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send(`${ban.user.username}#${ban.user.discriminator} (${ban.user.id}) has been killed by a mysterious fellow without any witnesses`))
+    await delay(10000)
+    const log = await ban.guild.fetchAuditLogs({ limit: 25, type: 'MEMBER_BAN_ADD' })
+    const l = log.entries.find(t => ban.user.id === t.target.id)
+    ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send(l ? `${l.target.username}#${l.target.discriminator} (${l.target.id}) has been killed by <@${l.executor.id}> on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })} for ${l.reason ? l.reason : 'fun'}` : `${ban.user.username}#${ban.user.discriminator} (${ban.user.id}) has been killed on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })} by a mysterious fellow without any witnesses`))
   })
 }
 

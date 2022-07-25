@@ -2,11 +2,13 @@ Discord bot mainly used in the [Dofus Discord server](https://discord.gg/0RDH0dq
 
 ## Features
 ### Commands
+- /ads `URL` - Lets a user request the Streamer/Youtube/Artist roles.
 - /chat `message` - Have a chat with the bot.
-- /info `@user` - Displays information about the selected user, if a user is not selected, displays information about the sender.
 - /colour `hue luminosity` - Change the colour of the Nitro Booster role to a random colour, can also write a specific hue/colour (colour name or colour hex code) and select the luminosity/brightness (bright, light or dark).
-- /d `number @user #channel` - Delete a number of messages in the current channel (100 max per use), can select a user to only delete their messages or a channel to transfer the deleted messages to, can also select both or none.
-- /q `MessageID #channel` - Quote a message, enter the message ID, also need to select the channel that the message is in if it's in a different channel than the current one.
+- /delete `number @user #channel` - Delete a number of messages in the current channel (100 max per use), can select a user to only delete their messages or a channel to transfer the deleted messages to, can also select both or none.
+- /image `@user` - Gives permissions to send images for the selected user for 2 minutes.
+- /info `@user` - Displays information about the selected user, if a user is not selected, displays information about the sender.
+- /warn `@user reason` - Warns the selected user.
 
 ### Plugins
 - Sends the Almanax offering for the current day to the specified Almanax channel, refreshes each midnight DUT (Dofus time).
