@@ -1,6 +1,6 @@
 module.exports = {
   // Bot token. https://discordapp.com/developers/applications/me
-  // Used for logging in. Required for adding commands to the server with commands.js.
+  // Used for starting the bot. Required for adding commands to the server with commands.js.
   TOKEN: '',
 
   // Bot Client ID.
@@ -8,15 +8,14 @@ module.exports = {
   CLIENT: '',
 
   // Server ID.
-  // Used for the info command, the fetch/nickname/nitro/streaming plugins and for logging deleted messages in index.js.
+  // Used for the fetch/nickname/nitro/streaming plugins and for logging deleted messages/banned users in index.js.
   // Required for adding commands to the server with commands.js.
   SERVER: '',
 
   // User tokens.
-  // Used for the info command and the fetch plugin.
-  USER: '',
+  // Used for the fetch/leaderboard plugins.
+  USER1: '',
   USER2: '',
-  USER3: '',
 
   // Cleverbot key. https://www.cleverbot.com/api
   // Used for the chat command.
@@ -63,7 +62,7 @@ module.exports = {
   ROLE_EPIC: '',
   ROLE_OMEGA: '',
 
-  // Other variables. Can enter anything to enable.
+  // Other variables. Can enter anything to enable or leave blank to disable.
   // Used for the nickname plugin.
   NICKNAME: '',
   // Used for the rules command.

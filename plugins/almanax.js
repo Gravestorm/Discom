@@ -8,10 +8,9 @@ const random = require('randomcolor')
 const almanax = JSON.parse(fs.readFileSync('almanax.json'))
 
 module.exports = async (client) => {
-
   if (!nconf.get('CHANNEL_ALMANAX')) return
   new cron({
-    cronTime: '00 00 10 * * *',
+    cronTime: '10 00 00 * * *',
     onTick: () => {
       client.channels.fetch(nconf.get('CHANNEL_ALMANAX')).then(c => c.messages.fetch({ limit: 1, cache: false }).then(m => m.last().delete()))
       fetch({ url: `https://www.krosmoz.com/en/almanax?game=dofus`, encoding: 'utf8', transform: (body) => { return cheerio.load(body) } }).then(($) => {
