@@ -1,4 +1,4 @@
-const { Client, Collection, EmbedBuilder, GatewayIntentBits, InteractionType } = require('discord.js')
+const { AuditLogEvent, Client, Collection, EmbedBuilder, GatewayIntentBits, InteractionType } = require('discord.js')
 const fs = require('node:fs')
 const nconf = require('nconf')
 const path = require('node:path')
@@ -32,9 +32,9 @@ if (nconf.get('CHANNEL_LOG') && nconf.get('SERVER')) {
     msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => msgs.reverse().forEach(m => c.send({ embeds: [new EmbedBuilder().setAuthor({ name: m.author.username, iconURL: m.author.displayAvatarURL() }).setDescription(m.content ? m.content : ' ').setImage(m.attachments.first() ? m.attachments.first().proxyURL : null).setFooter({ text: `#${m.channel.name}` }).setTimestamp(m.createdTimestamp).setColor(random())] })))
   })
   client.on('guildBanAdd', async ban => {
-    if (ban.guild.id !== nconf.get('SERVER') || !ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')) || ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
+    if (ban.guild.id !== nconf.get('SERVER') || !ban.guild.channels.fetch(nconf.get('CHANNEL_LOG'))) return
     await delay(10000)
-    const log = await ban.guild.fetchAuditLogs({ limit: 25, type: 'MEMBER_BAN_ADD' })
+    const log = await ban.guild.fetchAuditLogs({ limit: 25, type: AuditLogEvent.MemberBanAdd })
     const l = log.entries.find(t => ban.user.id === t.target.id)
     ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send(l ? `${l.target.username}#${l.target.discriminator} (${l.target.id}) has been killed by <@${l.executor.id}> on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })} for ${l.reason ? l.reason : 'fun'}` : `${ban.user.username}#${ban.user.discriminator} (${ban.user.id}) has been killed on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })} by a mysterious fellow without any witnesses`))
   })
