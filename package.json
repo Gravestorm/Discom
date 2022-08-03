@@ -5,7 +5,6 @@
   "main": "index.js",
   "dependencies": {
     "@discordjs/rest": "^1.0.1",
-    "@napi-rs/canvas": "^0.1.21",
     "bluebird": "^3.7.2",
     "cheerio": "^1.0.0-rc.12",
     "cleverbot": "^1.0.1",
@@ -31,7 +30,7 @@
     "commands": "node commands.js"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": "18.7.0",
+    "npm": "8.15.0"
   }
 }
