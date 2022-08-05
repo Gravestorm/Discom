@@ -24,11 +24,11 @@ client.on('interactionCreate', async interaction => {
 
 if (nconf.get('CHANNEL_LOG') && nconf.get('SERVER')) {
   client.on('messageDelete', m => {
-    if (m.guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror', 'leaderboard'].includes(m.channel.name) || !m.guild.channels.fetch(nconf.get('CHANNEL_LOG')) || m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
+    if (m.guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror', 'leaderboard'].includes(m.channel.name) || !m.guild.channels.fetch(nconf.get('CHANNEL_LOG'))) return
     m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send({ embeds: [new EmbedBuilder().setAuthor({ name: m.author.username, iconURL: m.author.displayAvatarURL() }).setDescription(m.content ? m.content : ' ').setImage(m.attachments.first() ? m.attachments.first().proxyURL : null).setFooter({ text: `#${m.channel.name}` }).setTimestamp(m.createdTimestamp).setColor(random())] }))
   })
   client.on('messageDeleteBulk', msgs => {
-    if (msgs.first().guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror', 'leaderboard'].includes(msgs.first().channel.name) || !msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')) || msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('VIEW_CHANNEL')) === false || msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.permissionsFor(client.user).has('SEND_MESSAGES')) === false) return
+    if (msgs.first().guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror', 'leaderboard'].includes(msgs.first().channel.name) || !msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG'))) return
     msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => msgs.reverse().forEach(m => c.send({ embeds: [new EmbedBuilder().setAuthor({ name: m.author.username, iconURL: m.author.displayAvatarURL() }).setDescription(m.content ? m.content : ' ').setImage(m.attachments.first() ? m.attachments.first().proxyURL : null).setFooter({ text: `#${m.channel.name}` }).setTimestamp(m.createdTimestamp).setColor(random())] })))
   })
   client.on('guildBanAdd', async ban => {
