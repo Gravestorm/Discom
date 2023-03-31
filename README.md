@@ -19,6 +19,7 @@ Discord bot mainly used in the [Dofus Discord server](https://discord.gg/0RDH0dq
 - Gives the Streaming role to users who have the Streamer role and are currently streaming, as well as removes the Streaming role when they finish streaming.
 - Removes random characters from the start of nicknames, used by people to pop up at the top of the online list.
 - Changes the colour of the Nitro Booster role to a random colour every hour.
+- Fetches the message count of users and logs it to a database.
 
 ## Permissions Needed
 - Read Text Channels

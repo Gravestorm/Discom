@@ -17,6 +17,9 @@ module.exports = {
   USER1: '',
   USER2: '',
 
+  // Database URL.
+  DATABASE: '',
+
   // Cleverbot key. https://www.cleverbot.com/api
   // Used for the chat command.
   CLEVERBOT: '',

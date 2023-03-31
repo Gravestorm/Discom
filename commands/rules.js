@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
 const nconf = require('nconf')
-const promise = require('bluebird')
-const delay = ms => new promise(resolve => setTimeout(resolve, ms))
+const delay = require('../helpers/delay')
 
 module.exports = {
   data: new SlashCommandBuilder().setName('rules').setDescription('Update the rules'),
@@ -26,7 +25,7 @@ module.exports = {
     const FrChannelsMain = '984205085611532348'
     const FrRolesMain = '984205103412158544'
     const FrOtherMain = '984205109644886086'
-  
+
     const ReglesMirror = '984144571107782736'
     const FrRules = '984432991558332467'
     const FrChannels = '984434005455810601'

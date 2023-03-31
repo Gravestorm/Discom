@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
 const nconf = require('nconf')
-const promise = require('bluebird')
-const delay = ms => new promise(resolve => setTimeout(resolve, ms))
+const delay = require('../helpers/delay')
 
 module.exports = {
   data: new SlashCommandBuilder().setName('image').setDescription('Grant the permission to send images for a user')
