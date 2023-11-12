@@ -20,7 +20,7 @@ module.exports = {
     let dt = new Date(datet[0], parseInt(datet[1]) - 1, datet[2])
     let dc = new Date(datec[0], parseInt(datec[1]) - 1, datec[2])
     dc > df && dc < dt ? date = new Date(interaction.options.getString('date')).toLocaleString('LT', { year: 'numeric', month: '2-digit', day: '2-digit' }) : date = new Date().toLocaleString('LT', { year: 'numeric', month: '2-digit', day: '2-digit' })
-    await fetch({ url: `https://www.krosmoz.com/en/almanax/${date}?game=dofus`, encoding: 'utf8', transform: (body) => { return cheerio.load(body) } }).then(async ($) => {
+    await fetch({ url: `https://www.krosmoz.com/en/almanax/${date}?game=dofus`, headers: { Accept: '*/*', 'Accept-Language': 'en-US,en;q=0.9,lt;q=0.8', Connection: 'close', 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.42' }, encoding: 'utf8', transform: (body) => { return cheerio.load(body) } }).then(async ($) => {
       let d = almanax.find(d => $('#achievement_dofus .mid .more .more-infos p').first().text().trim().replace('Quest: Offering for ', '') === d.N)
       await interaction.reply({ content: dc > df && dc < dt ? ' ' : 'Correct date format: yyyy-mm-dd (e.g. 2022-12-31)', embeds: [new EmbedBuilder().setTitle(`**${date} | ${d.N} | ${d.R}**`).setDescription(`**Objet:** ${d.IFR}\n${d.BFR}\n\n\n**Item:** ${d.IEN}\n${d.BEN}`).setThumbnail(d.I).setColor(random())], ephemeral: true })
     }).catch(err => { throw err })

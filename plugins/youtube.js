@@ -22,5 +22,5 @@ module.exports = (client) => {
       if (!msgs.find(m => m.content === enavid)) c.send(enavid)
       if (!msgs.find(m => m.content === fravid)) c.send(fravid)
     }))
-  }, 7200000) // 7200000 = 120 minutes
+  }, 600000) // 600000 = 10 minutes
 }

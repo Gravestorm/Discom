@@ -12,10 +12,9 @@ module.exports = {
   // Required for adding commands to the server with commands.js.
   SERVER: '',
 
-  // User tokens.
+  // User token.
   // Used for the fetch/leaderboard plugins.
-  USER1: '',
-  USER2: '',
+  USER: '',
 
   // Database URL.
   DATABASE: '',
