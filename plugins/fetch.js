@@ -55,10 +55,11 @@ module.exports = async (client) => {
         const result = await pool.query('SELECT * FROM members WHERE id = $1', [m.id])
         if (result.rows.length === 0) continue
         let data = result.rows[0]
+        // If user's total messages sent is 0, refetch user after 30 days, if it's more, refetch user after 7 days
         if ((data.total_msg === 0 && (Date.parse(date()) - Date.parse(data.updated)) / (1000 * 60 * 60 * 24) < 30) || (Date.parse(date()) - Date.parse(data.updated)) / (1000 * 60 * 60 * 24) < 7) continue
         await delay(6000)
         await fetch(`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true`).then(async res => {
-          console.log(m.id, m.displayName, JSON.parse(res).total_results)
+          console.log('Fetching member:', m.id, m.displayName, JSON.parse(res).total_results)
 
           if (JSON.parse(res).total_results === 0) return data.total_msg = data.en_msg = data.fr_msg = data.other_msg = data.pings = data.msg_per_day = 0
 
@@ -122,7 +123,7 @@ module.exports = async (client) => {
 
         pool.query('UPDATE members SET name = $2, updated = $3, total_msg = $4, en_msg = $5, fr_msg = $6, other_msg = $7, pings = $8, msg_per_day = $9 WHERE id = $1', [m.id, m.displayName, date(), data.total_msg, data.en_msg, data.fr_msg, data.other_msg, data.pings, data.msg_per_day], (err) => {
           if (err) throw err
-          console.log('Member updated:', data.id, data.name)
+          console.log(`Member updated: ${data.id} ${data.total_msg} ${data.name} -> ${m.displayName}`)
         })
       } catch (err) {
         console.error(err)
