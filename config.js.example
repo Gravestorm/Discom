@@ -13,15 +13,12 @@ module.exports = {
   SERVER: '',
 
   // User token.
-  // Used for the fetch/leaderboard plugins.
+  // Used for the info/leaderboard commands and the fetch plugin.
   USER: '',
 
   // Database URL.
+  // Used for the info/leaderboard commands and the fetch plugin.
   DATABASE: '',
-
-  // Cleverbot key. https://www.cleverbot.com/api
-  // Used for the chat command.
-  CLEVERBOT: '',
 
   // Twitter keys. https://developer.twitter.com/en/apps
   // Used for the twitter plugin.

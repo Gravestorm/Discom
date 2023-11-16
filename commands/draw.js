@@ -3,7 +3,7 @@ const { Hercai } = require('hercai')
 const herc = new Hercai()
 
 module.exports = {
-  data: new SlashCommandBuilder().setName('draw').setDescription('Ask the bot to draw an image')
+  data: new SlashCommandBuilder().setName('draw').setDescription('Ask the bot to generate an image')
     .addStringOption(option => option.setName('prompt').setDescription('Write a prompt for the image').setRequired(true)),
   async execute(interaction) {
     await interaction.deferReply()

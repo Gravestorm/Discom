@@ -1,5 +1,4 @@
 node_modules
 config.js
 config.json
-db.js
-db.json
+config.bak

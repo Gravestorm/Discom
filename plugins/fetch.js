@@ -10,7 +10,7 @@ async function AddNewMembers(g) {
     pool.query('SELECT * FROM members WHERE id = $1', [m.id], async (err, member) => {
       if (err) throw err
       if (member.rows.length === 0) {
-        pool.query('INSERT INTO members (id, name, created, updated, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day) VALUES ($1, $2, $3, $4, 0, 0, 0, 0, 0, 0)', [m.id, m.displayName, date(m.user.createdTimestamp), date()], (err) => {
+        pool.query('INSERT INTO members (id, name, created, updated, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day) VALUES ($1, $2, $3, $4, 0, 0, 0, 0, 0, 0)', [m.id, m.displayName, date(m.user.createdTimestamp), date(m.user.createdTimestamp)], (err) => {
           if (err) throw err
           console.log('New member added:', m.id, m.displayName)
         })
