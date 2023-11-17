@@ -12,14 +12,14 @@ const plugins = requireAll({ dirname: `${__dirname}/plugins`, filter: /^(?!-)(.+
 const commands = requireAll({ dirname: `${__dirname}/commands`, filter: /^(?!-)(.+)\.js$/ })
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] })
 client.commands = new Collection()
-// for (const name in commands) client.commands.set(commands[name].data.name, commands[name])
+for (const name in commands) client.commands.set(commands[name].data.name, commands[name])
 
 client.on('ready', () => { console.log('Connected'); for (const name in plugins) plugins[name](client) })
 
-// client.on('interactionCreate', async interaction => {
-//   if (interaction.type !== InteractionType.ApplicationCommand || !client.commands.get(interaction.commandName)) return
-//   try { await client.commands.get(interaction.commandName).execute(interaction) } catch (err) { console.error(err), await interaction.reply({ content: 'Command Error', ephemeral: true }) }
-// })
+client.on('interactionCreate', async interaction => {
+  if (interaction.type !== InteractionType.ApplicationCommand || !client.commands.get(interaction.commandName)) return
+  try { await client.commands.get(interaction.commandName).execute(interaction) } catch (err) { console.error(err), await interaction.reply({ content: 'Command Error', ephemeral: true }) }
+})
 
 if (nconf.get('CHANNEL_LOG') && nconf.get('SERVER')) {
   client.on('messageDelete', m => {
