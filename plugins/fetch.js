@@ -32,6 +32,30 @@ async function RemoveOldMembers(g) {
   })
 }
 
+async function calculateRemainingUsersAndTime(sortedMembers) {
+  let remainingUsers = 0
+  let estimatedTime = 0
+  for (const m of sortedMembers) {
+    const result = await pool.query('SELECT * FROM members WHERE id = $1', [m.id])
+    if (result.rows.length === 0) {
+      remainingUsers++
+      continue
+    }
+    const data = result.rows[0]
+    const timeSinceLastUpdate = (Date.now() - new Date(data.updated).getTime()) / (1000 * 60 * 60 * 24)
+    const shouldRefetch = timeSinceLastUpdate >= 7 && (data.total_msg > 0 || timeSinceLastUpdate >= 30)
+    if (shouldRefetch) {
+      remainingUsers++
+      if (data.total_msg > 0) {
+        estimatedTime += 3 * 6000
+      } else {
+        estimatedTime += 6000
+      }
+    }
+  }
+  console.log(`Remaining Users: ${remainingUsers}\nEstimated Time: ${estimatedTime / 3600000} hours`)
+}
+
 module.exports = async (client) => {
   if (!nconf.get('USER') || !nconf.get('DATABASE') || !nconf.get('SERVER') || !nconf.get('ROLE_IRON') || !nconf.get('ROLE_COPPER') || !nconf.get('ROLE_BRONZE') || !nconf.get('ROLE_SILVER') || !nconf.get('ROLE_GOLD') || !nconf.get('ROLE_CRYSTAL') || !nconf.get('ROLE_DIAMOND') || !nconf.get('ROLE_LEGEND') || !nconf.get('ROLE_EPIC') || !nconf.get('ROLE_OMEGA')) return
   const iron = nconf.get('ROLE_IRON')
@@ -50,7 +74,10 @@ module.exports = async (client) => {
     await pool.connect()
     await AddNewMembers(g)
     await RemoveOldMembers(g)
-    for (const m of g.members.cache.values()) {
+    const dbMembers = await pool.query('SELECT * FROM members ORDER BY total_msg ASC')
+    const sortedMembers = dbMembers.rows.map(data => g.members.resolve(data.id)).filter(Boolean)
+    //await calculateRemainingUsersAndTime(sortedMembers)
+    for (const m of sortedMembers) {
       try {
         const result = await pool.query('SELECT * FROM members WHERE id = $1', [m.id])
         if (result.rows.length === 0) continue
@@ -83,50 +110,51 @@ module.exports = async (client) => {
               }).catch(err => { throw err })
             }
           }
-          const d = data.total_msg
-          switch (true) {
-            case d < 50:
-              [iron, copper, bronze, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) }); break
-            case d >= 50 && d < 100:
-              [copper, bronze, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(iron)) m.roles.add(iron); break
-            case d >= 100 && d < 250:
-              [iron, bronze, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(copper)) m.roles.add(copper); break
-            case d >= 250 && d < 500:
-              [iron, copper, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(bronze)) m.roles.add(bronze); break
-            case d >= 500 && d < 1000:
-              [iron, copper, bronze, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(silver)) m.roles.add(silver); break
-            case d >= 1000 && d < 2500:
-              [iron, copper, bronze, silver, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(gold)) m.roles.add(gold); break
-            case d >= 2500 && d < 5000:
-              [iron, copper, bronze, silver, gold, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(crystal)) m.roles.add(crystal); break
-            case d >= 5000 && d < 10000:
-              [iron, copper, bronze, silver, gold, crystal, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(diamond)) m.roles.add(diamond); break
-            case d >= 10000 && d < 25000:
-              [iron, copper, bronze, silver, gold, crystal, diamond, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(legend)) m.roles.add(legend); break
-            case d >= 25000 && d < 50000:
-              [iron, copper, bronze, silver, gold, crystal, diamond, legend, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(epic)) m.roles.add(epic); break
-            case d >= 50000:
-              [iron, copper, bronze, silver, gold, crystal, diamond, legend, epic].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
-              if (!m.roles.cache.has(omega)) m.roles.add(omega); break
-            default: break
-          }
         }).catch(err => { throw err })
+        const d = data.total_msg
+        switch (true) {
+          case d < 50:
+            [iron, copper, bronze, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) }); break
+          case d >= 50 && d < 100:
+            [copper, bronze, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(iron)) m.roles.add(iron); break
+          case d >= 100 && d < 250:
+            [iron, bronze, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(copper)) m.roles.add(copper); break
+          case d >= 250 && d < 500:
+            [iron, copper, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(bronze)) m.roles.add(bronze); break
+          case d >= 500 && d < 1000:
+            [iron, copper, bronze, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(silver)) m.roles.add(silver); break
+          case d >= 1000 && d < 2500:
+            [iron, copper, bronze, silver, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(gold)) m.roles.add(gold); break
+          case d >= 2500 && d < 5000:
+            [iron, copper, bronze, silver, gold, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(crystal)) m.roles.add(crystal); break
+            case d >= 5000 && d < 10000:
+            [iron, copper, bronze, silver, gold, crystal, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(diamond)) m.roles.add(diamond); break
+          case d >= 10000 && d < 25000:
+            [iron, copper, bronze, silver, gold, crystal, diamond, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(legend)) m.roles.add(legend); break
+          case d >= 25000 && d < 50000:
+            [iron, copper, bronze, silver, gold, crystal, diamond, legend, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(epic)) m.roles.add(epic); break
+          case d >= 50000:
+            [iron, copper, bronze, silver, gold, crystal, diamond, legend, epic].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
+            if (!m.roles.cache.has(omega)) m.roles.add(omega); break
+          default:
+            [iron, copper, bronze, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) }); break
+        }
 
         pool.query('UPDATE members SET name = $2, updated = $3, total_msg = $4, en_msg = $5, fr_msg = $6, other_msg = $7, pings = $8, msg_per_day = $9 WHERE id = $1', [m.id, m.displayName, date(), data.total_msg, data.en_msg, data.fr_msg, data.other_msg, data.pings, data.msg_per_day], (err) => {
           if (err) throw err
           console.log(`Member updated: ${data.id} ${data.total_msg} ${data.name} -> ${m.displayName}`)
         })
       } catch (err) {
-        console.error(err)
+        throw err
       }
     }
   })

@@ -3,10 +3,15 @@ const { Hercai } = require('hercai')
 const herc = new Hercai()
 
 module.exports = {
-  data: new SlashCommandBuilder().setName('chat').setDescription('Have a chat with the bot').addStringOption(option => option.setName('text').setDescription('Talk to the bot').setRequired(true)),
+  data: new SlashCommandBuilder().setName('chat').setDescription('Have a chat with the bot').addStringOption(option => option.setName('text').setDescription('Talk to the bot').setRequired(true))
+  .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(
+    { name: 'GPT-4', value: 'v3-beta' },
+    { name: 'GPT-3.5', value: 'beta' },
+    { name: 'GPT-3', value: 'v2' }
+  )),
   async execute(interaction) {
     await interaction.deferReply()
-    await herc.question({ model: 'v2', content: interaction.options.getString('text') }).then(async response => {
+    await herc.question({ model: interaction.options.getString('version') ? interaction.options.getString('version') : 'v3-beta', content: interaction.options.getString('text') }).then(async response => {
       const replyText = `*${interaction.options.getString('text')}*\n\n${response.reply}`
       if (replyText.length >= 1999) {
         const chunks = []
@@ -28,6 +33,6 @@ module.exports = {
       } else {
         await interaction.editReply(replyText)
       }
-    })
+    }).catch(err => interaction.editReply(err.toString()))
   }
 }
