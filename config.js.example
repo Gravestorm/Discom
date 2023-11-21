@@ -13,11 +13,11 @@ module.exports = {
   SERVER: '',
 
   // User token.
-  // Used for the info/leaderboard commands and the fetch plugin.
+  // Used for the info commands and the fetch/leaderboard plugins.
   USER: '',
 
   // Database URL.
-  // Used for the info/leaderboard commands and the fetch plugin.
+  // Used for the info commands and the fetch/leaderboard plugins.
   DATABASE: '',
 
   // Twitter keys. https://developer.twitter.com/en/apps

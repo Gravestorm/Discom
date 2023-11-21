@@ -57,7 +57,7 @@ async function calculateRemainingUsersAndTime(sortedMembers) {
 }
 
 module.exports = async (client) => {
-  if (!nconf.get('USER') || !nconf.get('DATABASE') || !nconf.get('SERVER') || !nconf.get('ROLE_IRON') || !nconf.get('ROLE_COPPER') || !nconf.get('ROLE_BRONZE') || !nconf.get('ROLE_SILVER') || !nconf.get('ROLE_GOLD') || !nconf.get('ROLE_CRYSTAL') || !nconf.get('ROLE_DIAMOND') || !nconf.get('ROLE_LEGEND') || !nconf.get('ROLE_EPIC') || !nconf.get('ROLE_OMEGA')) return
+  if (!nconf.get('USER2') || !nconf.get('DATABASE') || !nconf.get('SERVER') || !nconf.get('ROLE_IRON') || !nconf.get('ROLE_COPPER') || !nconf.get('ROLE_BRONZE') || !nconf.get('ROLE_SILVER') || !nconf.get('ROLE_GOLD') || !nconf.get('ROLE_CRYSTAL') || !nconf.get('ROLE_DIAMOND') || !nconf.get('ROLE_LEGEND') || !nconf.get('ROLE_EPIC') || !nconf.get('ROLE_OMEGA')) return
   const iron = nconf.get('ROLE_IRON')
   const copper = nconf.get('ROLE_COPPER')
   const bronze = nconf.get('ROLE_BRONZE')
@@ -68,7 +68,6 @@ module.exports = async (client) => {
   const legend = nconf.get('ROLE_LEGEND')
   const epic = nconf.get('ROLE_EPIC')
   const omega = nconf.get('ROLE_OMEGA')
-
   client.guilds.fetch(nconf.get('SERVER')).then(async (g) => {
     await g.members.fetch({ force: true })
     await pool.connect()
@@ -82,18 +81,15 @@ module.exports = async (client) => {
         const result = await pool.query('SELECT * FROM members WHERE id = $1', [m.id])
         if (result.rows.length === 0) continue
         let data = result.rows[0]
+        let total_msg = data.total_msg
         // If user's total messages sent is 0, refetch user after 30 days, if it's more, refetch user after 7 days
         if ((data.total_msg === 0 && (Date.parse(date()) - Date.parse(data.updated)) / (1000 * 60 * 60 * 24) < 30) || (Date.parse(date()) - Date.parse(data.updated)) / (1000 * 60 * 60 * 24) < 7) continue
         await delay(6000)
         await fetch(`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true`).then(async res => {
           console.log('Fetching member:', m.id, m.displayName, JSON.parse(res).total_results)
-
           if (JSON.parse(res).total_results === 0) return data.total_msg = data.en_msg = data.fr_msg = data.other_msg = data.pings = data.msg_per_day = 0
-
           data.total_msg = JSON.parse(res).total_results
-
           data.msg_per_day = Number(data.total_msg / ((Date.parse(date()) - Date.parse(date(data.created))) / 86400000)).toFixed(6)
-
           if (JSON.parse(res).total_results !== data.total_msg || JSON.parse(res).total_results !== data.en_msg + data.fr_msg + data.other_msg) {
             let links = [`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?mentions=${m.id}&include_nsfw=true`,
             `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&include_nsfw=true`,
@@ -133,7 +129,7 @@ module.exports = async (client) => {
           case d >= 2500 && d < 5000:
             [iron, copper, bronze, silver, gold, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
             if (!m.roles.cache.has(crystal)) m.roles.add(crystal); break
-            case d >= 5000 && d < 10000:
+          case d >= 5000 && d < 10000:
             [iron, copper, bronze, silver, gold, crystal, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) })
             if (!m.roles.cache.has(diamond)) m.roles.add(diamond); break
           case d >= 10000 && d < 25000:
@@ -148,13 +144,12 @@ module.exports = async (client) => {
           default:
             [iron, copper, bronze, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) }); break
         }
-
         pool.query('UPDATE members SET name = $2, updated = $3, total_msg = $4, en_msg = $5, fr_msg = $6, other_msg = $7, pings = $8, msg_per_day = $9 WHERE id = $1', [m.id, m.displayName, date(), data.total_msg, data.en_msg, data.fr_msg, data.other_msg, data.pings, data.msg_per_day], (err) => {
           if (err) throw err
-          console.log(`Member updated: ${data.id} ${data.total_msg} ${data.name} -> ${m.displayName}`)
+          console.log(`Member updated:  ${data.id} ${data.name} ${total_msg} -> ${m.displayName} ${data.total_msg}`)
         })
       } catch (err) {
-        throw err
+        console.log(err)
       }
     }
   })

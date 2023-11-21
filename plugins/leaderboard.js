@@ -1,5 +1,4 @@
 const { EmbedBuilder } = require('discord.js')
-const cron = require('cron').CronJob
 const nconf = require('nconf')
 const random = require('randomcolor')
 const { Pool } = require('pg')
@@ -70,18 +69,11 @@ module.exports = async (client) => {
     'FROM members LIMIT 20', [], (err, members) => {
       if (err) throw err
       const combinedRanks = []
-
-      // loop through each member and add up their ranks
       members.rows.forEach((row) => {
         const rankSum = Number(row.total_msg_rank) + Number(row.en_msg_rank) + Number(row.fr_msg_rank) + Number(row.other_msg_rank) + Number(row.pings_rank) + Number(row.msg_per_day_rank)
-
-        // add the combined rank to the object using the member's ID as the key
         combinedRanks.push({ id: row.id, rankSum })
       })
-
-      // sort the combined ranks in ascending order and limit to top 20
       const top20 = combinedRanks.sort((a, b) => a.rankSum - b.rankSum).slice(0, 20).map((member) => member.id)
-
       pool.query(`SELECT * FROM members WHERE id IN (${top20.map((id) => `'${id}'`).join(', ')})`, [], (err, members) => {
         if (err) throw err
         members.rows.forEach((m, i) => {
@@ -203,7 +195,7 @@ module.exports = async (client) => {
   })
 
   await client.channels.fetch(nconf.get('CHANNEL_LEADERBOARD')).then(async c => {
-    await c.messages.fetch({ limit: 8, cache: false }).then(m => m.forEach(m => m.delete())) // limit 8 due to there not being overall atm
+    await c.messages.fetch({ limit: 9, cache: false }).then(m => m.forEach(m => m.delete()))
     for (let i = 0; i < uris.length; i++) {
       await delay(6000)
       await fetch(uris[i]).then(res => {
@@ -216,20 +208,12 @@ module.exports = async (client) => {
 
     await c.send(`Out of **${format(users)}** users: **${format(user0)}** sent 0 messages, **${format(user1)}** sent 1~10 messages, **${format(user10)}** sent 11~99 messages, **${format(user100)}** sent 100+ messages.\nOut of **${format(user1 + user10 + user100)}** users who sent a message: **${format(userEN)}** only in English channels, **${format(userFR)}** only in French channels, **${format(userOT)}** only in Other channels,\n**${format(userENFR)}** in both English and French channels and **${format(userALL)}** in English, French, as well as Other channels.\n\nMessages sent in the server:\nAll channels: **${format(serverT)}** (**${format(totalT)}** from users still in the server, **${format(serverT - totalT)}** from users no longer in the server)\nEnglish channels: **${format(serverEN)} (${format(totalEN)}** from users still in the server, **${format(serverEN - totalEN)}** from users no longer in the server)\nFrench channels: **${format(serverFR)} (${format(totalFR)}** from users still in the server, **${format(serverFR - totalFR)}** from users no longer in the server)\nOther channels: **${format(serverOT)} (${format(totalOT)}** from users still in the server, **${format(serverOT - totalOT)}** from users no longer in the server)`)
     await c.send({ embeds: [new EmbedBuilder().setTitle('Oldest accounts in the server\nComptes les plus anciens du serveur').setDescription(`\`\`\`ansi\n${tC}\`\`\``).setColor(random())] })
-    //await c.send({ embeds: [new EmbedBuilder().setTitle('Overall rank\nClassement général').setDescription(`\`\`\`ansi\n${tR}\`\`\``).setColor(random())] })
+    await c.send({ embeds: [new EmbedBuilder().setTitle('Overall rank\nClassement général').setDescription(`\`\`\`ansi\n${tR}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in Other channels\nTotal des messages envoyés sur les salons Autres').setDescription(`\`\`\`ansi\n${tOT}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in French channels\nTotal des messages envoyés sur les salons Françaises').setDescription(`\`\`\`ansi\n${tFR}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in English channels\nTotal des messages envoyés sur les salons Anglaises').setDescription(`\`\`\`ansi\n${tEN}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Most pinged users\nUtilisateurs les plus sollicités').setDescription(`\`\`\`ansi\n${tP}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Average messages per day since account creation\nMessages moyens par jour depuis la création du compte').setDescription(`\`\`\`ansi\n${tM}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in all channels\nTotal des messages envoyés sur tous les salons').setDescription(`\`\`\`ansi\n${tT}\`\`\``).setColor(random())] })
-  })
-  new cron({
-    cronTime: '00 00 00 1 * *',
-    onTick: async () => {
-
-    },
-    start: true,
-    timeZone: 'Europe/Paris'
   })
 }

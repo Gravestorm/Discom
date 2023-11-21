@@ -5,7 +5,7 @@ const herc = new Hercai()
 module.exports = {
   data: new SlashCommandBuilder().setName('chat').setDescription('Have a chat with the bot').addStringOption(option => option.setName('text').setDescription('Talk to the bot').setRequired(true))
   .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(
-    { name: 'GPT-4', value: 'v3-beta' },
+    { name: 'GPT-4 (default)', value: 'v3-beta' },
     { name: 'GPT-3.5', value: 'beta' },
     { name: 'GPT-3', value: 'v2' }
   )),
