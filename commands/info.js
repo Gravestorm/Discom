@@ -45,23 +45,22 @@ module.exports = {
 
       // Draw the username
       ctx.font = '30px Jura'
-      const gradient = ctx.createLinearGradient(115, 58, 115 + ctx.measureText(user.displayName).width, 58)
-      gradient.addColorStop(0, '#f5d76e')
-      gradient.addColorStop(0.5, '#e67e22')
-      gradient.addColorStop(1, '#e67e22')
-      ctx.fillStyle = gradient
-      ctx.fillText(user.displayName, 115, 58)
+      const gradientUsername = ctx.createLinearGradient(130, 0, ctx.measureText(user.displayName).width + 130, 0)
+      gradientUsername.addColorStop(0, '#f5d76e')
+      gradientUsername.addColorStop(1, '#e67e22')
+      ctx.fillStyle = gradientUsername
+      ctx.fillText(user.displayName, 130, 65)
 
       // Draw the ornament
-      ctx.drawImage(ornament, 100, 15, ctx.measureText(user.displayName).width + 30, 70)
+      ctx.drawImage(ornament, 100, 0, ctx.measureText(user.displayName).width + 65, 95)
 
-      // Draw the info
-      const gradientText = ctx.createLinearGradient(0, 0, c.width, 0)
-      gradientText.addColorStop(0, '#7a8e7c')
-      gradientText.addColorStop(1, '#7a8e7c')
-      ctx.fillStyle = gradientText
+      // Draw the Messages text
+      ctx.font = '30px Jura'
+      const gradientText1 = ctx.createLinearGradient(22, 0, 200, 0)
+      gradientText1.addColorStop(0, '#a4b3a5')
+      gradientText1.addColorStop(1, '#6d8e70')
+      ctx.fillStyle = gradientText1
       ctx.fillText('Messages', 42, 157)
-      ctx.fillText('Info', 354, 157)
 
       ctx.font = '20px Jura'
       ctx.fillText(`All: ${userStats.total_msg} (#${userIndex + 1})`, 22, 195)
@@ -71,12 +70,20 @@ module.exports = {
       ctx.fillText(`Daily: ${userStats.msg_per_day.replace(/(\.\d{0,2}).*$/, '$1')} (#${getRank(members.rows, 'msg_per_day', user.id)})`, 22, 335)
       ctx.fillText(`Pings: ${userStats.pings} (#${getRank(members.rows, 'pings', user.id)})`, 22, 370)
 
+      ctx.font = '30px Jura'
+      const gradientText2 = ctx.createLinearGradient(284, 0, 500, 0)
+      gradientText2.addColorStop(0, '#a4b3a5')
+      gradientText2.addColorStop(1, '#6d8e70')
+      ctx.fillStyle = gradientText2
+      ctx.fillText('Info', 354, 157)
+
       await interaction.member.guild.members.fetch({ force: true })
       const sortedCreated = [...interaction.member.guild.members.cache.values()].sort((a, b) => (a.user.createdTimestamp || 0) - (b.user.createdTimestamp || 0))
       const sortedJoined = [...interaction.member.guild.members.cache.values()].sort((a, b) => (a.joinedTimestamp || 0) - (b.joinedTimestamp || 0))
       const rankCreated = sortedCreated.findIndex(member => member.user.id === user.id) + 1
       const rankJoined = sortedJoined.findIndex(member => member.user.id === user.id) + 1
 
+      ctx.font = '20px Jura'
       ctx.fillText(`Rank: #${((userIndex + 1 + getRank(members.rows, 'en_msg', user.id) + getRank(members.rows, 'fr_msg', user.id) + getRank(members.rows, 'other_msg', user.id) + getRank(members.rows, 'msg_per_day', user.id) + getRank(members.rows, 'pings', user.id)) / 6).toFixed(2)}`, 284, 195)
       ctx.fillText(`Born: ${new Date(user.user.createdTimestamp).toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })}`, 284, 230)
       ctx.fillText(`Join: ${user.joinedTimestamp ? new Date(user.joinedTimestamp).toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }) : 'Unknown'}`, 284, 265)
@@ -98,9 +105,9 @@ module.exports = {
       avatar.src = Buffer.from(await body.arrayBuffer())
       ctx.drawImage(avatar, 10, 10, 80, 80)
 
-      await fs.writeFile('./info.png', Buffer.from(c.toDataURL('image/png').split(',')[1], 'base64'))
-      await interaction.editReply({ files: ['./info.png'] })
-      await fs.unlink('./info.png')
+      await fs.writeFile(`${user.id}.png`, Buffer.from(c.toDataURL('image/png').split(',')[1], 'base64'))
+      await interaction.editReply({ files: [`${user.id}.png`] })
+      await fs.unlink(`${user.id}.png`)
     })
   }
 }
