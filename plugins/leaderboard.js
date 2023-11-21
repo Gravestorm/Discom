@@ -11,7 +11,7 @@ function format(x) {
 }
 
 module.exports = async (client) => {
-  if (!nconf.get('USER2') || !nconf.get('DATABASE') || !nconf.get('SERVER') || !nconf.get('CHANNEL_LEADERBOARD')) return
+  if (!nconf.get('USER') || !nconf.get('DATABASE') || !nconf.get('SERVER') || !nconf.get('CHANNEL_LEADERBOARD')) return
   let tT = tEN = tFR = tOT = tC = tM = tP = tR = ''
   let serverT = serverEN = serverFR = serverOT = totalT = totalEN = totalFR = totalOT = 0
   let users = user0 = user1 = user10 = user100 = userEN = userFR = userOT = userENFR = userALL = 0
@@ -66,31 +66,28 @@ module.exports = async (client) => {
     'rank() OVER (ORDER BY other_msg DESC) AS other_msg_rank, ' +
     'rank() OVER (ORDER BY pings DESC) AS pings_rank, ' +
     'rank() OVER (ORDER BY msg_per_day DESC) AS msg_per_day_rank ' +
-    'FROM members LIMIT 20', [], (err, members) => {
-      if (err) throw err
-      const combinedRanks = []
-      members.rows.forEach((row) => {
-        const rankSum = Number(row.total_msg_rank) + Number(row.en_msg_rank) + Number(row.fr_msg_rank) + Number(row.other_msg_rank) + Number(row.pings_rank) + Number(row.msg_per_day_rank)
-        combinedRanks.push({ id: row.id, rankSum })
-      })
-      const top20 = combinedRanks.sort((a, b) => a.rankSum - b.rankSum).slice(0, 20).map((member) => member.id)
-      pool.query(`SELECT * FROM members WHERE id IN (${top20.map((id) => `'${id}'`).join(', ')})`, [], (err, members) => {
-        if (err) throw err
-        members.rows.forEach((m, i) => {
-          if (i === 0) tR += `1️⃣ [1;2m[1;31m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-          if (i === 1) tR += `2️⃣ [1;34m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-          if (i === 2) tR += `3️⃣ [1;35m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-          if (i === 3) tR += `4️⃣ [1;33m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-          if (i === 4) tR += `5️⃣ [1;33m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-          if (i === 5) tR += `6️⃣ [1;32m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-          if (i === 6) tR += `7️⃣ [1;32m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-          if (i === 7) tR += `8️⃣ [1;32m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-          if (i === 8) tR += `9️⃣ [1;32m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-          if (i === 9) tR += `🔟 [1;32m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-          if (i > 9 && i < 20) tR += `#️⃣ [1;36m${(combinedRanks[i].rankSum / 6).toFixed(2)}[0m ${m.name}\n`
-        })
-      })
+    'FROM members', [], (err, members) => {
+    if (err) throw err
+    const combinedRanks = []
+    members.rows.forEach((row) => {
+      const rankSum = Number(row.total_msg_rank) + Number(row.en_msg_rank) + Number(row.fr_msg_rank) + Number(row.other_msg_rank) + Number(row.pings_rank) + Number(row.msg_per_day_rank)
+      combinedRanks.push({ name: row.name, rankSum })
     })
+    const top20 = combinedRanks.sort((a, b) => a.rankSum - b.rankSum).slice(0, 20)
+    top20.forEach((m, i) => {
+      if (i === 0) tR += `1️⃣ [1;2m[1;31m${(m.rankSum / 6).toFixed(2)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
+      if (i === 1) tR += `2️⃣ [1;34m${(m.rankSum / 6).toFixed(2)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
+      if (i === 2) tR += `3️⃣ [1;35m${(m.rankSum / 6).toFixed(2)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
+      if (i === 3) tR += `4️⃣ [1;33m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
+      if (i === 4) tR += `5️⃣ [1;33m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
+      if (i === 5) tR += `6️⃣ [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 6) tR += `7️⃣ [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 7) tR += `8️⃣ [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 8) tR += `9️⃣ [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 9) tR += `🔟 [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
+      if (i > 9 && i < 20) tR += `#️⃣ [1;36m${(m.rankSum / 6).toFixed(2)}[0m ${m.name}\n`
+    })
+  })
 
   pool.query('SELECT * FROM members ORDER BY other_msg DESC LIMIT 20', [], (err, members) => {
     if (err) throw err
