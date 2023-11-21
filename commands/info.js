@@ -71,9 +71,17 @@ module.exports = {
       ctx.fillText(`Daily: ${userStats.msg_per_day.replace(/(\.\d{0,2}).*$/, '$1')} (#${getRank(members.rows, 'msg_per_day', user.id)})`, 22, 335)
       ctx.fillText(`Pings: ${userStats.pings} (#${getRank(members.rows, 'pings', user.id)})`, 22, 370)
 
+      await interaction.member.guild.members.fetch({ force: true })
+      const sortedCreated = [...interaction.member.guild.members.cache.values()].sort((a, b) => (a.user.createdTimestamp || 0) - (b.user.createdTimestamp || 0))
+      const sortedJoined = [...interaction.member.guild.members.cache.values()].sort((a, b) => (a.joinedTimestamp || 0) - (b.joinedTimestamp || 0))
+      const rankCreated = sortedCreated.findIndex(member => member.user.id === user.id) + 1
+      const rankJoined = sortedJoined.findIndex(member => member.user.id === user.id) + 1
+
       ctx.fillText(`Rank: #${((userIndex + 1 + getRank(members.rows, 'en_msg', user.id) + getRank(members.rows, 'fr_msg', user.id) + getRank(members.rows, 'other_msg', user.id) + getRank(members.rows, 'msg_per_day', user.id) + getRank(members.rows, 'pings', user.id)) / 6).toFixed(2)}`, 284, 195)
-      ctx.fillText(`Born: ${user.user.createdAt.toLocaleDateString('en-CA')}`, 284, 230)
-      ctx.fillText(`Joined: ${user.joinedTimestamp ? new Date(user.joinedTimestamp).toLocaleDateString('en-CA') : 'Unknown'}`, 284, 265)
+      ctx.fillText(`Born: ${new Date(user.user.createdTimestamp).toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })}`, 284, 230)
+      ctx.fillText(`Join: ${user.joinedTimestamp ? new Date(user.joinedTimestamp).toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }) : 'Unknown'}`, 284, 265)
+      ctx.fillText(`Born Rank: #${rankCreated}`, 284, 300)
+      ctx.fillText(`Join Rank: #${rankJoined}`, 284, 335)
 
       // Draw the boxes
       ctx.drawImage(box1, 10, 100, 230, 290)
