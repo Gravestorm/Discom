@@ -31,8 +31,6 @@ module.exports = {
       background.src = await readFile('./img/Background.png')
       const ornament = new canvas.Image()
       ornament.src = await readFile('./img/Ornament.png')
-      const box0 = new canvas.Image()
-      box0.src = await readFile('./img/Box0.png')
       const box1 = new canvas.Image()
       box1.src = await readFile('./img/Box1.png')
       const box2 = new canvas.Image()
@@ -54,10 +52,11 @@ module.exports = {
       // Draw the ornament
       ctx.drawImage(ornament, 100, 0, ctx.measureText(user.displayName).width + 65, 95)
 
-      // Draw the Messages text
+      // Draw the first box
+      ctx.drawImage(box1, 10, 100, 230, 290)
       ctx.font = '30px Jura'
       const gradientText1 = ctx.createLinearGradient(22, 0, 200, 0)
-      gradientText1.addColorStop(0, '#a4b3a5')
+      gradientText1.addColorStop(0, '#bdc9be')
       gradientText1.addColorStop(1, '#6d8e70')
       ctx.fillStyle = gradientText1
       ctx.fillText('Messages', 42, 157)
@@ -70,16 +69,18 @@ module.exports = {
       ctx.fillText(`Daily: ${userStats.msg_per_day.replace(/(\.\d{0,2}).*$/, '$1')} (#${getRank(members.rows, 'msg_per_day', user.id)})`, 22, 335)
       ctx.fillText(`Pings: ${userStats.pings} (#${getRank(members.rows, 'pings', user.id)})`, 22, 370)
 
+      // Draw the second box
+      ctx.drawImage(box2, 270, 100, 230, 290)
       ctx.font = '30px Jura'
-      const gradientText2 = ctx.createLinearGradient(284, 0, 500, 0)
-      gradientText2.addColorStop(0, '#a4b3a5')
+      const gradientText2 = ctx.createLinearGradient(284, 0, 450, 0)
+      gradientText2.addColorStop(0, '#bdc9be')
       gradientText2.addColorStop(1, '#6d8e70')
       ctx.fillStyle = gradientText2
       ctx.fillText('Info', 354, 157)
 
-      await interaction.member.guild.members.fetch({ force: true })
-      const sortedCreated = [...interaction.member.guild.members.cache.values()].sort((a, b) => (a.user.createdTimestamp || 0) - (b.user.createdTimestamp || 0))
-      const sortedJoined = [...interaction.member.guild.members.cache.values()].sort((a, b) => (a.joinedTimestamp || 0) - (b.joinedTimestamp || 0))
+      await user.guild.members.fetch({ force: true })
+      const sortedCreated = [...user.guild.members.cache.values()].sort((a, b) => (a.user.createdTimestamp || 0) - (b.user.createdTimestamp || 0))
+      const sortedJoined = [...user.guild.members.cache.values()].sort((a, b) => (a.joinedTimestamp || 0) - (b.joinedTimestamp || 0))
       const rankCreated = sortedCreated.findIndex(member => member.user.id === user.id) + 1
       const rankJoined = sortedJoined.findIndex(member => member.user.id === user.id) + 1
 
@@ -90,10 +91,32 @@ module.exports = {
       ctx.fillText(`Born Rank: #${rankCreated}`, 284, 300)
       ctx.fillText(`Join Rank: #${rankJoined}`, 284, 335)
 
-      // Draw the boxes
-      ctx.drawImage(box1, 10, 100, 230, 290)
-      ctx.drawImage(box2, 270, 100, 230, 290)
-      ctx.drawImage(box0, 530, 100, 230, 290)
+      // Draw the third box
+      ctx.drawImage(box3, 530, 100, 230, 290)
+      ctx.font = '30px Jura'
+      const gradientText3 = ctx.createLinearGradient(564, 0, 730, 0)
+      gradientText3.addColorStop(0, '#bdc9be')
+      gradientText3.addColorStop(1, '#6d8e70')
+      ctx.fillStyle = gradientText3
+      ctx.fillText('Awards', 594, 157)
+
+      const gridSize = 3
+      const boxSize = 50
+      const Roles = [...user.roles.cache.values()]
+      let iconsFetched = 0
+      for (const [i, r] of Roles.entries()) {
+        if (r.icon === null) continue
+        const row = Math.floor(iconsFetched / gridSize)
+        const col = iconsFetched % gridSize
+        const x = 560 + col * (boxSize + 15)
+        const y = 185 + row * (boxSize + 20)
+        const { body } = await request(r.iconURL({ dynamic: true }), { method: 'GET' })
+        const roleImage = new canvas.Image()
+        roleImage.src = Buffer.from(await body.arrayBuffer())
+        ctx.drawImage(roleImage, x, y, boxSize, boxSize)
+        iconsFetched++
+        if (iconsFetched >= 9) break
+      }
 
       // Draw the avatar
       ctx.beginPath()
