@@ -100,22 +100,63 @@ module.exports = {
       ctx.fillStyle = gradientText3
       ctx.fillText('Awards', 594, 157)
 
-      const gridSize = 3
-      const boxSize = 50
       const Roles = [...user.roles.cache.values()]
       let iconsFetched = 0
-      for (const [i, r] of Roles.entries()) {
-        if (r.icon === null) continue
+      let gridSize
+      let iconSize
+      let horizontalPadding
+      let verticalPadding
+      switch (true) {
+        case Roles.length <= 9:
+          gridSize = 3
+          iconSize = 50
+          horizontalPadding = 15
+          verticalPadding = 20
+          break
+        case Roles.length <= 16:
+          gridSize = 4
+          iconSize = 40
+          horizontalPadding = 10
+          verticalPadding = 15
+          break
+        case Roles.length <= 25:
+          gridSize = 5
+          iconSize = 30
+          horizontalPadding = 10
+          verticalPadding = 12
+          break
+        case Roles.length <= 36:
+          gridSize = 6
+          iconSize = 25
+          horizontalPadding = 7
+          verticalPadding = 10
+          break
+        case Roles.length <= 56:
+          gridSize = 7
+          iconSize = 22
+          horizontalPadding = 5
+          verticalPadding = 4
+          break
+        default:
+          gridSize = 7
+          iconSize = 22
+          horizontalPadding = 5
+          verticalPadding = 4
+          break
+      }
+
+      for (let i = 0; i < Roles.length; i++) {
+        if (Roles[i].icon === null) continue
         const row = Math.floor(iconsFetched / gridSize)
         const col = iconsFetched % gridSize
-        const x = 560 + col * (boxSize + 15)
-        const y = 185 + row * (boxSize + 20)
-        const { body } = await request(r.iconURL({ dynamic: true }), { method: 'GET' })
+        const x = 554 + col * (iconSize + horizontalPadding)
+        const y = 178 + row * (iconSize + verticalPadding)
+        const { body } = await request(Roles[i].iconURL({ dynamic: false }), { method: 'GET' })
         const roleImage = new canvas.Image()
         roleImage.src = Buffer.from(await body.arrayBuffer())
-        ctx.drawImage(roleImage, x, y, boxSize, boxSize)
+        ctx.drawImage(roleImage, x, y, iconSize, iconSize)
         iconsFetched++
-        if (iconsFetched >= 9) break
+        if (iconsFetched > 56) break
       }
 
       // Draw the avatar
