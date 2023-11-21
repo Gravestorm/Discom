@@ -71,12 +71,13 @@ module.exports = {
       ctx.fillText(`Daily: ${userStats.msg_per_day.replace(/(\.\d{0,2}).*$/, '$1')} (#${getRank(members.rows, 'msg_per_day', user.id)})`, 22, 335)
       ctx.fillText(`Pings: ${userStats.pings} (#${getRank(members.rows, 'pings', user.id)})`, 22, 370)
 
-      ctx.fillText(`Born: ${user.user.createdAt.toLocaleDateString('en-CA')}`, 284, 195)
-      ctx.fillText(`Joined: ${user.joinedTimestamp ? new Date(user.joinedTimestamp).toLocaleDateString('en-CA') : 'Unknown'}`, 284, 230)
+      ctx.fillText(`Rank: #${((userIndex + 1 + getRank(members.rows, 'en_msg', user.id) + getRank(members.rows, 'fr_msg', user.id) + getRank(members.rows, 'other_msg', user.id) + getRank(members.rows, 'msg_per_day', user.id) + getRank(members.rows, 'pings', user.id)) / 6).toFixed(2)}`, 284, 195)
+      ctx.fillText(`Born: ${user.user.createdAt.toLocaleDateString('en-CA')}`, 284, 230)
+      ctx.fillText(`Joined: ${user.joinedTimestamp ? new Date(user.joinedTimestamp).toLocaleDateString('en-CA') : 'Unknown'}`, 284, 265)
 
       // Draw the boxes
       ctx.drawImage(box1, 10, 100, 230, 290)
-      ctx.drawImage(box1, 270, 100, 230, 290)
+      ctx.drawImage(box2, 270, 100, 230, 290)
       ctx.drawImage(box0, 530, 100, 230, 290)
 
       // Draw the avatar
