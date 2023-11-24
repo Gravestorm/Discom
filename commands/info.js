@@ -7,6 +7,7 @@ const fs = require('fs').promises
 const nconf = require('nconf')
 const { Pool } = require('pg')
 const pool = new Pool({ connectionString: nconf.get('DATABASE'), max: 20 })
+const date = require('../helpers/date')
 
 module.exports = {
   data: new SlashCommandBuilder().setName('info').setDescription('Displays information about a user or yourself')
@@ -47,58 +48,58 @@ module.exports = {
       gradientUsername.addColorStop(0, '#f5d76e')
       gradientUsername.addColorStop(1, '#e67e22')
       ctx.fillStyle = gradientUsername
-      ctx.fillText(user.displayName, 130, 65)
+      ctx.fillText(user.displayName, 130, 63)
 
       // Draw the ornament
-      ctx.drawImage(ornament, 100, 0, ctx.measureText(user.displayName).width + 65, 95)
+      ctx.drawImage(ornament, 100, -5, ctx.measureText(user.displayName).width + 65, 95)
 
       // Draw the first box
-      ctx.drawImage(box1, 10, 100, 230, 290)
-      ctx.font = '30px Jura'
-      const gradientText1 = ctx.createLinearGradient(22, 0, 200, 0)
+      ctx.drawImage(box1, 10, 90, 230, 300)
+      ctx.font = '28px Jura'
+      const gradientText1 = ctx.createLinearGradient(22, 0, 180, 0)
       gradientText1.addColorStop(0, '#bdc9be')
       gradientText1.addColorStop(1, '#6d8e70')
       ctx.fillStyle = gradientText1
-      ctx.fillText('Messages', 42, 157)
+      ctx.fillText('Messages', 48, 147)
 
-      ctx.font = '20px Jura'
-      ctx.fillText(`All: ${userStats.total_msg} (#${userIndex + 1})`, 22, 195)
-      ctx.fillText(`EN: ${userStats.en_msg} (#${getRank(members.rows, 'en_msg', user.id)})`, 22, 230)
-      ctx.fillText(`FR: ${userStats.fr_msg} (#${getRank(members.rows, 'fr_msg', user.id)})`, 22, 265)
-      ctx.fillText(`Other: ${userStats.other_msg} (#${getRank(members.rows, 'other_msg', user.id)})`, 22, 300)
-      ctx.fillText(`Daily: ${userStats.msg_per_day.replace(/(\.\d{0,2}).*$/, '$1')} (#${getRank(members.rows, 'msg_per_day', user.id)})`, 22, 335)
-      ctx.fillText(`Pings: ${userStats.pings} (#${getRank(members.rows, 'pings', user.id)})`, 22, 370)
+      ctx.font = '18px Jura'
+      ctx.fillText(`Rank: #${((userIndex + 1 + getRank(members.rows, 'en_msg', user.id) + getRank(members.rows, 'fr_msg', user.id) + getRank(members.rows, 'other_msg', user.id) + getRank(members.rows, 'msg_per_day', user.id) + getRank(members.rows, 'pings', user.id)) / 6).toFixed(2)}`, 22, 182)
+      ctx.fillText(`All: ${userStats.total_msg} (#${userIndex + 1})`, 22, 217)
+      ctx.fillText(`EN: ${userStats.en_msg} (#${getRank(members.rows, 'en_msg', user.id)})`, 22, 247)
+      ctx.fillText(`FR: ${userStats.fr_msg} (#${getRank(members.rows, 'fr_msg', user.id)})`, 22, 277)
+      ctx.fillText(`Other: ${userStats.other_msg} (#${getRank(members.rows, 'other_msg', user.id)})`, 22, 307)
+      ctx.fillText(`Daily: ${userStats.msg_per_day.replace(/(\.\d{0,2}).*$/, '$1')} (#${getRank(members.rows, 'msg_per_day', user.id)})`, 22, 337)
+      ctx.fillText(`Pings: ${userStats.pings} (#${getRank(members.rows, 'pings', user.id)})`, 22, 367)
 
       // Draw the second box
-      ctx.drawImage(box2, 270, 100, 230, 290)
-      ctx.font = '30px Jura'
+      ctx.drawImage(box2, 270, 90, 230, 300)
+      ctx.font = '28px Jura'
       const gradientText2 = ctx.createLinearGradient(284, 0, 450, 0)
       gradientText2.addColorStop(0, '#bdc9be')
       gradientText2.addColorStop(1, '#6d8e70')
       ctx.fillStyle = gradientText2
-      ctx.fillText('Info', 354, 157)
+      ctx.fillText('Info', 358, 150)
 
-      await user.guild.members.fetch({ force: true })
-      const sortedCreated = [...user.guild.members.cache.values()].sort((a, b) => (a.user.createdTimestamp || 0) - (b.user.createdTimestamp || 0))
-      const sortedJoined = [...user.guild.members.cache.values()].sort((a, b) => (a.joinedTimestamp || 0) - (b.joinedTimestamp || 0))
-      const rankCreated = sortedCreated.findIndex(member => member.user.id === user.id) + 1
-      const rankJoined = sortedJoined.findIndex(member => member.user.id === user.id) + 1
-
-      ctx.font = '20px Jura'
-      ctx.fillText(`Rank: #${((userIndex + 1 + getRank(members.rows, 'en_msg', user.id) + getRank(members.rows, 'fr_msg', user.id) + getRank(members.rows, 'other_msg', user.id) + getRank(members.rows, 'msg_per_day', user.id) + getRank(members.rows, 'pings', user.id)) / 6).toFixed(2)}`, 284, 195)
-      ctx.fillText(`Born: ${new Date(user.user.createdTimestamp).toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })}`, 284, 230)
-      ctx.fillText(`Join: ${user.joinedTimestamp ? new Date(user.joinedTimestamp).toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }) : 'Unknown'}`, 284, 265)
-      ctx.fillText(`Born Rank: #${rankCreated}`, 284, 300)
-      ctx.fillText(`Join Rank: #${rankJoined}`, 284, 335)
+      ctx.font = '18px Jura'
+      ctx.fillText(`Account Created:`, 284, 177)
+      ctx.fillText(`${date(userStats.created, true)} (#${ getRank(members.rows, 'created', user.id)})`, 284, 202)
+      ctx.fillText(`Server Joined:`, 284, 232)
+      ctx.fillText(`${userStats.joined ? date(userStats.joined, true) : 'Unknown'} (#${getRank(members.rows, 'joined', user.id)})`, 284, 257)
+      ctx.fillText(`First Message:`, 284, 287)
+      ctx.fillText(`${userStats.first_msg ? date(userStats.first_msg, true) : 'NaN'} (#${getRank(members.rows, 'first_msg', user.id)})`, 284, 312)
+      if (date(userStats.joined, true) !== date(userStats.rejoined, true)) {
+        ctx.fillText(`Server Rejoined:`, 284, 342)
+        ctx.fillText(`${userStats.rejoined ? date(userStats.rejoined, true) : 'Unknown'} (#${getRank(members.rows, 'rejoined', user.id)})`, 284, 367)
+      }
 
       // Draw the third box
-      ctx.drawImage(box3, 530, 100, 230, 290)
-      ctx.font = '30px Jura'
-      const gradientText3 = ctx.createLinearGradient(564, 0, 730, 0)
+      ctx.drawImage(box3, 530, 90, 230, 300)
+      ctx.font = '28px Jura'
+      const gradientText3 = ctx.createLinearGradient(564, 0, 720, 0)
       gradientText3.addColorStop(0, '#bdc9be')
       gradientText3.addColorStop(1, '#6d8e70')
       ctx.fillStyle = gradientText3
-      ctx.fillText('Awards', 594, 157)
+      ctx.fillText('Awards', 594, 150)
 
       const Roles = [...user.roles.cache.values()]
       let iconsFetched = 0
@@ -131,12 +132,6 @@ module.exports = {
           horizontalPadding = 7
           verticalPadding = 10
           break
-        case Roles.length <= 56:
-          gridSize = 7
-          iconSize = 22
-          horizontalPadding = 5
-          verticalPadding = 4
-          break
         default:
           gridSize = 7
           iconSize = 22
@@ -145,18 +140,17 @@ module.exports = {
           break
       }
 
-      for (let i = 0; i < Roles.length; i++) {
+      for (let i = 0; i < Roles.length && iconsFetched < 56; i++) {
         if (Roles[i].icon === null) continue
         const row = Math.floor(iconsFetched / gridSize)
         const col = iconsFetched % gridSize
         const x = 554 + col * (iconSize + horizontalPadding)
-        const y = 178 + row * (iconSize + verticalPadding)
+        const y = 170 + row * (iconSize + verticalPadding)
         const { body } = await request(Roles[i].iconURL({ dynamic: false }), { method: 'GET' })
         const roleImage = new canvas.Image()
         roleImage.src = Buffer.from(await body.arrayBuffer())
         ctx.drawImage(roleImage, x, y, iconSize, iconSize)
         iconsFetched++
-        if (iconsFetched > 56) break
       }
 
       // Draw the avatar
