@@ -171,6 +171,11 @@ module.exports = {
 }
 
 function getRank(members, field, userId) {
-  members.sort((a, b) => b[field] - a[field])
+  if (['created', 'joined', 'rejoined', 'first_msg'].includes(field)) {
+    members = members.filter(member => member[field] !== null)
+    members.sort((a, b) => a[field] - b[field])
+  } else {
+    members.sort((a, b) => b[field] - a[field])
+  }
   return members.findIndex(member => member.id === userId) + 1
 }
