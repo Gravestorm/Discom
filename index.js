@@ -1,4 +1,5 @@
 const { AuditLogEvent, Client, Collection, EmbedBuilder, GatewayIntentBits, InteractionType } = require('discord.js')
+const { diffChars } = require('diff')
 const fs = require('node:fs')
 const nconf = require('nconf')
 const path = require('node:path')
@@ -39,7 +40,9 @@ if (nconf.get('CHANNEL_LOG') && nconf.get('SERVER')) {
   })
   client.on('messageUpdate', (oldMessage, newMessage) => {
     if (newMessage.author.bot || oldMessage.content === newMessage.content || newMessage.guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'bot', 'madhouse', 'rules-info', 'regles-info', 'rules-mirror', 'regles-mirror', 'leaderboard'].includes(newMessage.channel.name) || !newMessage.guild.channels.fetch(nconf.get('CHANNEL_LOG'))) return
-    newMessage.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send({ embeds: [new EmbedBuilder().setAuthor({ name: newMessage.author.username, iconURL: newMessage.author.displayAvatarURL() }).setDescription(`**Old:**\n${oldMessage.content.slice(0, 2000)}\n\n**New:**\n${newMessage.content.slice(0, 2000)}`).setFooter({ text: `#${newMessage.channel.name}` }).setTimestamp(newMessage.editedTimestamp).setColor(random())] }))
+    const differences = diffChars(oldMessage.content, newMessage.content)
+    const formattedChanges = differences.map(part => part.added ? `**${part.value}**` : part.removed ? `~~${part.value}~~` : part.value).join('')
+    newMessage.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send({ embeds: [new EmbedBuilder().setAuthor({ name: newMessage.author.username, iconURL: newMessage.author.displayAvatarURL() }).setDescription(`**Old:**\n${oldMessage.content.slice(0, 2000)}\n\n**New:**\n${formattedChanges.slice(0, 2000)}`).setFooter({ text: `#${newMessage.channel.name}` }).setTimestamp(newMessage.editedTimestamp).setColor(random())] }))
   })
 }
 
