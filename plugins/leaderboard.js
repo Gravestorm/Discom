@@ -17,9 +17,9 @@ module.exports = async (client) => {
   let serverT = serverEN = serverFR = serverOT = totalT = totalEN = totalFR = totalOT = 0
   let users = user0 = user1 = user10 = user100 = userEN = userFR = userOT = userENFR = userALL = 0
   let uris = [`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&include_nsfw=true`,
-  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&include_nsfw=true`,
+  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=1079510661471666297&include_nsfw=true`,
   `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true`,
-  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true`]
+  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=1079510661471666297&channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true`]
 
   pool.query('SELECT * FROM members', [], (err, members) => {
     if (err) throw err
@@ -58,7 +58,7 @@ module.exports = async (client) => {
     })
   })
 
-  pool.query('SELECT * FROM members ORDER BY rejoined ASC LIMIT 20', [], (err, members) => {
+  pool.query('SELECT * FROM members ORDER BY joined ASC LIMIT 20', [], (err, members) => {
     if (err) throw err
     members.rows.forEach((m, i) => {
       if (i === 0) tJ += `1️⃣ [1;2m[1;31m${date(m.joined, true)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
@@ -75,20 +75,37 @@ module.exports = async (client) => {
     })
   })
 
+  pool.query('SELECT * FROM members ORDER BY rejoined ASC LIMIT 20', [], (err, members) => {
+    if (err) throw err
+    members.rows.forEach((m, i) => {
+      if (i === 0) tR += `1️⃣ [1;2m[1;31m${date(m.rejoined, true)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
+      if (i === 1) tR += `2️⃣ [1;34m${date(m.rejoined, true)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
+      if (i === 2) tR += `3️⃣ [1;35m${date(m.rejoined, true)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
+      if (i === 3) tR += `4️⃣ [1;33m${date(m.rejoined, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
+      if (i === 4) tR += `5️⃣ [1;33m${date(m.rejoined, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
+      if (i === 5) tR += `6️⃣ [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 6) tR += `7️⃣ [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 7) tR += `8️⃣ [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 8) tR += `9️⃣ [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 9) tR += `🔟 [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
+      if (i > 9 && i < 20) tR += `#️⃣ [1;36m${date(m.rejoined, true)}[0m ${m.name}\n`
+    })
+  })
+
   pool.query('SELECT * FROM members ORDER BY first_msg ASC LIMIT 20', [], (err, members) => {
     if (err) throw err
     members.rows.forEach((m, i) => {
       if (i === 0) tF += `1️⃣ [1;2m[1;31m${date(m.first_msg, true)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tF += `2️⃣ [1;34m${date(m.joined, true)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tF += `3️⃣ [1;35m${date(m.joined, true)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tF += `4️⃣ [1;33m${date(m.joined, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tF += `5️⃣ [1;33m${date(m.joined, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tF += `6️⃣ [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tF += `7️⃣ [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tF += `8️⃣ [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tF += `9️⃣ [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tF += `🔟 [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tF += `#️⃣ [1;36m${date(m.joined, true)}[0m ${m.name}\n`
+      if (i === 1) tF += `2️⃣ [1;34m${date(m.first_msg, true)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
+      if (i === 2) tF += `3️⃣ [1;35m${date(m.first_msg, true)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
+      if (i === 3) tF += `4️⃣ [1;33m${date(m.first_msg, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
+      if (i === 4) tF += `5️⃣ [1;33m${date(m.first_msg, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
+      if (i === 5) tF += `6️⃣ [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 6) tF += `7️⃣ [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 7) tF += `8️⃣ [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 8) tF += `9️⃣ [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
+      if (i === 9) tF += `🔟 [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
+      if (i > 9 && i < 20) tF += `#️⃣ [1;36m${date(m.first_msg, true)}[0m ${m.name}\n`
     })
   })
 
@@ -226,7 +243,7 @@ module.exports = async (client) => {
   })
 
   await client.channels.fetch(nconf.get('CHANNEL_LEADERBOARD')).then(async c => {
-    await c.messages.fetch({ limit: 11, cache: false }).then(m => m.forEach(m => m.delete()))
+    await c.messages.fetch({ limit: 12, cache: false }).then(m => m.forEach(m => m.delete()))
     for (let i = 0; i < uris.length; i++) {
       await delay(6000)
       await fetch(uris[i]).then(res => {
@@ -239,9 +256,10 @@ module.exports = async (client) => {
 
     await c.send(`Out of **${format(users)}** users: **${format(user0)}** sent 0 messages, **${format(user1)}** sent 1~10 messages, **${format(user10)}** sent 11~99 messages, **${format(user100)}** sent 100+ messages.\nOut of **${format(user1 + user10 + user100)}** users who sent a message: **${format(userEN)}** only in English channels, **${format(userFR)}** only in French channels, **${format(userOT)}** only in Other channels,\n**${format(userENFR)}** in both English and French channels and **${format(userALL)}** in English, French, as well as Other channels.\n\nMessages sent in the server:\nAll channels: **${format(serverT)}** (**${format(totalT)}** from users still in the server, **${format(serverT - totalT)}** from users no longer in the server)\nEnglish channels: **${format(serverEN)} (${format(totalEN)}** from users still in the server, **${format(serverEN - totalEN)}** from users no longer in the server)\nFrench channels: **${format(serverFR)} (${format(totalFR)}** from users still in the server, **${format(serverFR - totalFR)}** from users no longer in the server)\nOther channels: **${format(serverOT)} (${format(totalOT)}** from users still in the server, **${format(serverOT - totalOT)}** from users no longer in the server)`)
     await c.send({ embeds: [new EmbedBuilder().setTitle('Oldest account creation date\nDate de création de compte la plus ancienne').setDescription(`\`\`\`ansi\n${tC}\`\`\``).setColor(random())] })
-    await c.send({ embeds: [new EmbedBuilder().setTitle('Oldest server join date\nDate d\'adhésion au serveur la plus ancienne').setDescription(`\`\`\`ansi\n${tJ}\`\`\``).setColor(random())] })
+    await c.send({ embeds: [new EmbedBuilder().setTitle('Oldest server join date without rejoins\nDate d\'adhésion au serveur la plus ancienne sans réadhésion').setDescription(`\`\`\`ansi\n${tJ}\`\`\``).setColor(random())] })
+    await c.send({ embeds: [new EmbedBuilder().setTitle('Oldest server join date with rejoins\nDate d\'adhésion au serveur la plus ancienne avec réadhésions').setDescription(`\`\`\`ansi\n${tR}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Oldest first message sent\nPremier message envoyé le plus ancien').setDescription(`\`\`\`ansi\n${tF}\`\`\``).setColor(random())] })
-    await c.send({ embeds: [new EmbedBuilder().setTitle('Overall rank\nClassement général').setDescription(`\`\`\`ansi\n${tR}\`\`\``).setColor(random())] })
+    await c.send({ embeds: [new EmbedBuilder().setTitle('Overall rank from the info below\nClassement global à partir des informations ci-dessous').setDescription(`\`\`\`ansi\n${tR}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in Other channels\nTotal des messages envoyés sur les salons Autres').setDescription(`\`\`\`ansi\n${tOT}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in French channels\nTotal des messages envoyés sur les salons Françaises').setDescription(`\`\`\`ansi\n${tFR}\`\`\``).setColor(random())] })
     await c.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in English channels\nTotal des messages envoyés sur les salons Anglaises').setDescription(`\`\`\`ansi\n${tEN}\`\`\``).setColor(random())] })
