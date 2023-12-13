@@ -101,7 +101,7 @@ module.exports = {
       ctx.fillStyle = gradientText3
       ctx.fillText('Awards', 594, 150)
 
-      const Roles = [...user.roles.cache.values()]
+      const Roles = [...user.roles.cache.values()].filter(role => role.icon !== null)
       let iconsFetched = 0
       let gridSize
       let iconSize
@@ -141,7 +141,6 @@ module.exports = {
       }
 
       for (let i = 0; i < Roles.length && iconsFetched < 56; i++) {
-        if (Roles[i].icon === null) continue
         const row = Math.floor(iconsFetched / gridSize)
         const col = iconsFetched % gridSize
         const x = 554 + col * (iconSize + horizontalPadding)
