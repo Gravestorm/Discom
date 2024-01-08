@@ -6,15 +6,19 @@ const herc = new Hercai()
 
 module.exports = {
   data: new SlashCommandBuilder().setName('draw').setDescription('Ask the bot to generate an image')
-    .addStringOption(option => option.setName('prompt').setDescription('Write a prompt for the image').setRequired(true))
-    .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(
-      { name: 'Dall-E 3', value: 'v3' },
-      { name: 'Dall-E 2 Beta', value: 'v2-beta' },
-      { name: 'Dall-E 2', value: 'v2' },
-      { name: 'Dall-E 1', value: 'v1' },
-      { name: 'Lexica', value: 'lexica' },
-      { name: 'Prodia (default)', value: 'prodia' },
-    )),
+  .addStringOption(option => option.setName('prompt').setDescription('Write a prompt for the image').setRequired(true))
+  .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(
+    { name: 'Shonin', value: 'shonin'},
+    { name: 'Raava', value: 'raava'},
+    { name: 'Animefy', value: 'animefy'},
+    { name: 'Simurg', value: 'simurg'},
+    { name: 'Lexica', value: 'lexica' },
+    { name: 'Dall-E 3', value: 'v3' },
+    { name: 'Dall-E 2 Beta', value: 'v2-beta' },
+    { name: 'Dall-E 2', value: 'v2' },
+    { name: 'Dall-E 1', value: 'v1' },
+    { name: 'Prodia (default)', value: 'prodia' },
+  )),
   async execute(interaction) {
     await interaction.deferReply()
     let msg = `*${interaction.options.getString('prompt')}*\n\n`

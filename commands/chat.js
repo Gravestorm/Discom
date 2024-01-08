@@ -6,12 +6,15 @@ module.exports = {
   data: new SlashCommandBuilder().setName('chat').setDescription('Have a chat with the bot')
   .addStringOption(option => option.setName('text').setDescription('Talk to the bot').setRequired(true))
   .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(
-    { name: 'Google\'s Gemini', value: 'gemini' },
-    { name: 'GPT 4 (default)', value: 'v3-beta' },
+    { name: 'Google Gemini-Pro', value: 'gemini' },
+    { name: 'GPT-3.5 Turbo-16k', value: 'turbo-16k' },
+    { name: 'GPT-3.5 Turbo', value: 'turbo' },
+    { name: 'GPT-4-32k', value: 'v3-32k' },
+    { name: 'GPT-4 (default)', value: 'v3' },
   )),
   async execute(interaction) {
     await interaction.deferReply()
-    await herc.question({ model: interaction.options.getString('version') ? interaction.options.getString('version') : 'v3-beta', content: interaction.options.getString('text') }).then(async response => {
+    await herc.question({ model: interaction.options.getString('version') ? interaction.options.getString('version') : 'v3', content: interaction.options.getString('text') }).then(async response => {
       const replyText = `*${interaction.options.getString('text')}*\n\n${response.reply}`
       if (replyText.length >= 1999) {
         const chunks = []
