@@ -34,7 +34,7 @@ module.exports = {
   CHANNEL_ADS: '',
   // Used for the almanax plugin.
   CHANNEL_ALMANAX: '',
-  // Used for the ads/warn commands.
+  // Used for the ads command.
   CHANNEL_BOT: '',
   // Used for the leaderboard plugin.
   CHANNEL_LEADERBOARD: '',
@@ -47,8 +47,10 @@ module.exports = {
   // Used for the streaming plugin.
   ROLE_STREAMER: '',
   ROLE_STREAMING: '',
-  // Used for the image command.
-  ROLE_IMAGE: '',
+  // Used for the warn command.
+  ROLE_WARN1: '',
+  ROLE_WARN2: '',
+  ROLE_WARN3: '',
   // Used for the info command and the fetch plugin.
   ROLE_IRON: '',
   ROLE_COPPER: '',

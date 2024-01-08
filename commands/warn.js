@@ -16,7 +16,7 @@ module.exports = {
     const user = interaction.options.getMember('user')
     const logChannel = await interaction.guild.channels.fetch(nconf.get('CHANNEL_LOG'))
 
-    if (interaction.options.getString('unwarn') === true) {
+    if (interaction.options.getBoolean('unwarn') === true) {
       switch (true) {
         case user.roles.cache.has(warn1):
           user.roles.remove(warn1); break
@@ -28,17 +28,20 @@ module.exports = {
           break
       }
     await logChannel.send(`${user} has been unwarned by ${interaction.member} on ${date()} for ${interaction.options.getString('reason')}`)
+    await interaction.reply({ content: 'User unwarned successfully', ephemeral: true })
     } else {
       switch (true) {
         case user.roles.cache.has(warn1):
-          user.roles.remove(warn1); user.roles.remove(warn2); break
+          user.roles.remove(warn1); user.roles.add(warn2); break
         case user.roles.cache.has(warn2):
           user.roles.remove(warn2); user.roles.add(warn3); break
+        case user.roles.cache.has(warn3):
+          break
         default:
           user.roles.add(warn1); break
       }
       await logChannel.send(`${user} has been warned by ${interaction.member} on ${date()} for ${interaction.options.getString('reason')}`)
-      if (interaction.options.getString('unwarn') !== true) await interaction.reply({ content: `${user} :warning: <#678610533699813407> <#678708610762670101>` })
+      interaction.options.getBoolean('silent') === true ? await interaction.reply({ content: 'User warned successfully', ephemeral: true }) : await interaction.reply({ content: `${user} :warning: <#678610533699813407> <#678708610762670101>` })
     }
   }
 }

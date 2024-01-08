@@ -151,17 +151,21 @@ async function fetchMember(m, refetch, data) {
   let othermsg = refetch ? data.other_msg : 0
   let pings = refetch ? data.pings : 0
   let msgperday = refetch ? data.msg_per_day : 0
-  const resDate = await fetchWithRetries(`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=373576614505611282&include_nsfw=true&sort_by=timestamp&sort_order=asc&offset=0`)
-  if (JSON.parse(resDate).total_results !== 0 && date(JSON.parse(resDate).messages[0][0].timestamp, true) < date(joined, true)) joined = JSON.parse(resDate).messages[0][0].timestamp
+  console.log('\nFetching member:', m.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperday, Date.parse(date(created, true)), Date.parse(date(joined, true)), Date.parse(date(rejoined, true)), Date.parse(date(firstmsg, true)), refetch)
+  if (refetch !== true) {
+    const resDate = await fetchWithRetries(`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=373576614505611282&include_nsfw=true&sort_by=timestamp&sort_order=asc&offset=0`)
+    if (JSON.parse(resDate).total_results !== 0 && date(JSON.parse(resDate).messages[0][0].timestamp, true) < date(joined, true)) joined = JSON.parse(resDate).messages[0][0].timestamp
+  }
   const resMessages = await fetchWithRetries(`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=1079510661471666297&channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true&sort_by=timestamp&sort_order=asc&offset=0`)
   if (JSON.parse(resMessages).total_results === 0) {
     firstmsg = null
     totalmsg = enmsg = frmsg = othermsg = pings = msgperday = 0
   } else {
     firstmsg = JSON.parse(resMessages).messages[0][0].timestamp
-    if (date(JSON.parse(resMessages).messages[0][0].timestamp, true) < date(joined, true)) joined = JSON.parse(resMessages).messages[0][0].timestamp
+    if (refetch !== true && date(JSON.parse(resMessages).messages[0][0].timestamp, true) < date(joined, true)) joined = JSON.parse(resMessages).messages[0][0].timestamp
   }
-  if (JSON.parse(resMessages).total_results !== enmsg + frmsg + othermsg) {
+  if (JSON.parse(resMessages).total_results !== totalmsg || JSON.parse(resMessages).total_results !== enmsg + frmsg + othermsg) {
+    totalmsg = JSON.parse(resMessages).total_results
     const newData = await updateMember(m, JSON.parse(resMessages).total_results, pings, enmsg, frmsg, othermsg, refetch)
     pings = newData.pings
     enmsg = newData.enmsg
@@ -169,7 +173,8 @@ async function fetchMember(m, refetch, data) {
     othermsg = newData.othermsg
   }
   msgperday = Number(totalmsg / ((Date.parse(date()) - Date.parse(date(created))) / 86400000)).toFixed(6)
-  return {name, created, joined, rejoined, firstmsg, totalmsg, enmsg, frmsg, othermsg, pings, msgperday}
+  console.log('Fetched member: ', m.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperday, Date.parse(date(created, true)), Date.parse(date(joined, true)), Date.parse(date(rejoined, true)), Date.parse(date(firstmsg, true)), refetch)
+  return {name, created: Date.parse(date(created, true)), joined: Date.parse(date(joined, true)), rejoined: Date.parse(date(rejoined, true)), firstmsg: Date.parse(date(firstmsg, true)), totalmsg, enmsg, frmsg, othermsg, pings, msgperday}
 }
 
 async function addNewMembers(g) {
