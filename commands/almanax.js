@@ -4,12 +4,13 @@ const fs = require('node:fs')
 const nconf = require('nconf')
 const random = require('randomcolor')
 const almanax = JSON.parse(fs.readFileSync('AlmanaxYears.json'))
+const requiredKeys = ['CHANNEL_ALMANAX']
 
 module.exports = {
   data: new SlashCommandBuilder().setName('almanax').setDescription('Fetches the Almanax of a specific day')
     .addStringOption(option => option.setName('date').setDescription('Enter the day in the following format: yyyy-mm-dd (e.g. 2024-12-31)').setRequired(true)),
   async execute(interaction) {
-    if (!nconf.get('CHANNEL_ALMANAX')) return
+    if (!requiredKeys.every(key => nconf.get(key))) return
     let date
     let datef = '2012-09-19'.split('-')
     let datet = '2040-12-31'.split('-')

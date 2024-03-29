@@ -1,8 +1,9 @@
 const nconf = require('nconf')
 const twit = require('twit')
+const requiredKeys = ['CHANNEL_ANNOUNCEMENTS', 'CHANNEL_ANNONCES', 'CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN', 'ACCESS_TOKEN_SECRET']
 
 module.exports = (client) => {
-  if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES') || !nconf.get('CONSUMER_KEY') || !nconf.get('CONSUMER_SECRET') || !nconf.get('ACCESS_TOKEN') || !nconf.get('ACCESS_TOKEN_SECRET')) return
+  if (!requiredKeys.every(key => nconf.get(key))) return
   const T = new twit({
     consumer_key: nconf.get('CONSUMER_KEY'),
     consumer_secret: nconf.get('CONSUMER_SECRET'),

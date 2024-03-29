@@ -22,12 +22,11 @@ module.exports = {
   async execute(interaction) {
     await interaction.deferReply()
     let msg = `*${interaction.options.getString('prompt')}*\n\n`
-    await herc.drawImage({ model: interaction.options.getString('version') ? interaction.options.getString('version') : 'prodia', prompt: interaction.options.getString('prompt') }).then(async (response) => {
-      const { data } = await axios.get(response.url, { responseType: 'arraybuffer' })
-      const tempFilePath = `${response.url.split('?')[0].split('/').pop()}.png`
-      await fs.writeFile(tempFilePath, Buffer.from(data))
-      await interaction.editReply({ content: msg, files: [tempFilePath] })
-      await fs.unlink(tempFilePath)
-    }).catch(err => interaction.editReply(err.toString()))
+    const response = await herc.drawImage({ model: interaction.options.getString('version') ? interaction.options.getString('version') : 'prodia', prompt: interaction.options.getString('prompt') }).catch(err => interaction.editReply(err.toString()))
+    const { data } = await axios.get(response.url, { responseType: 'arraybuffer' })
+    const tempFilePath = `${response.url.split('?')[0].split('/').pop()}.png`
+    await fs.writeFile(tempFilePath, Buffer.from(data))
+    await interaction.editReply({ content: msg, files: [tempFilePath] })
+    await fs.unlink(tempFilePath)
   }
 }

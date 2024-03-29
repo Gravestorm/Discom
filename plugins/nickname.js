@@ -1,8 +1,9 @@
 const nconf = require('nconf')
 const pre = ['!', '"', '“', '”', '\'', '‘', '’', '#', '$', '%', '&', '(aa']
+const requiredKeys = ['NICKNAME', 'SERVER']
 
 module.exports = (client) => {
-  if (!nconf.get('NICKNAME') || !nconf.get('SERVER')) return
+  if (!requiredKeys.every(key => nconf.get(key))) return
   setInterval(() => {
     client.guilds.fetch(nconf.get('SERVER')).then(g => g.members.fetch().then(m => m.forEach(m => {
       if (m.displayName.startsWith('( ')) return m.setNickname(m.displayName.replace(/ /gi, ''))

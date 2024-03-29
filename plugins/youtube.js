@@ -1,8 +1,9 @@
 const nconf = require('nconf')
 const ytpl = require('ytpl')
+const requiredKeys = ['CHANNEL_ADS', 'CHANNEL_ANNONCES', 'CHANNEL_ANNOUNCEMENTS']
 
 module.exports = (client) => {
-  if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES') || !nconf.get('CHANNEL_ADS')) return
+  if (!requiredKeys.every(key => nconf.get(key))) return
   setInterval(async () => {
     const en = await ytpl('https://www.youtube.com/channel/UCJ_tz6Xl_YtrAHd3gqChhMA', { limit: 1 })
     const fr = await ytpl('https://www.youtube.com/user/dofus', { limit: 1 })

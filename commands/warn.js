@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
 const nconf = require('nconf')
 const date = require('../helpers/date')
+const requiredKeys = ['CHANNEL_LOG', 'ROLE_WARN1', 'ROLE_WARN2', 'ROLE_WARN3']
 
 module.exports = {
   data: new SlashCommandBuilder().setName('warn').setDescription('Warn a user')
@@ -9,7 +10,7 @@ module.exports = {
     .addBooleanOption(option => option.setName('silent').setDescription('Should the warning be silent or send a message in this channel with a link to the rules'))
     .addBooleanOption(option => option.setName('unwarn').setDescription('Remove a warning from the user')),
   async execute(interaction) {
-    if (!nconf.get('CHANNEL_LOG') || !nconf.get('ROLE_WARN1') || !nconf.get('ROLE_WARN2') || !nconf.get('ROLE_WARN3')) return
+    if (!requiredKeys.every(key => nconf.get(key))) return
     const warn1  = nconf.get('ROLE_WARN1')
     const warn2 = nconf.get('ROLE_WARN2')
     const warn3 = nconf.get('ROLE_WARN3')

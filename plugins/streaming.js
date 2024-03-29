@@ -1,7 +1,8 @@
 const nconf = require('nconf')
+const requiredKeys = ['ROLE_STREAMING', 'SERVER']
 
 module.exports = (client) => {
-  if (!nconf.get('ROLE_STREAMING') || !nconf.get('SERVER')) return
+  if (!requiredKeys.every(key => nconf.get(key))) return
   setInterval(() => {
     client.guilds.fetch(nconf.get('SERVER')).then(g => g.members.fetch().then(() => {
       g.roles.cache.get(nconf.get('ROLE_STREAMER')).members.map(m => {

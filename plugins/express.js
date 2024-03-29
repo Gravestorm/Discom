@@ -1,9 +1,10 @@
 const express = require('express')
 const nconf = require('nconf')
 const app = express()
+const requiredKeys = ['LOCAL']
 
 module.exports = () => {
-  if (nconf.get('LOCAL')) return
+  if (requiredKeys.every(key => nconf.get(key))) return
   if (!nconf.get('PORT')) nconf.set('PORT', 5000)
   app.set('port', (nconf.get('PORT')))
   app.use(express.static(__dirname + '/public'))

@@ -2,9 +2,10 @@ const nconf = require('nconf')
 const parser = require('rss-parser')
 const P = new parser()
 const url = ['news', 'devblog', 'changelog']
+const requiredKeys = ['CHANNEL_ANNONCES', 'CHANNEL_ANNOUNCEMENTS']
 
 module.exports = (client) => {
-  if (!nconf.get('CHANNEL_ANNOUNCEMENTS') || !nconf.get('CHANNEL_ANNONCES')) return
+  if (!requiredKeys.every(key => nconf.get(key))) return
   setInterval(() => {
     url.forEach(n => {
       P.parseURL(`https://www.dofus.com/en/rss/${n}.xml`, (err, feed) => {

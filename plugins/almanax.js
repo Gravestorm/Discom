@@ -3,9 +3,10 @@ const fs = require('node:fs')
 const nconf = require('nconf')
 const random = require('randomcolor')
 const almanax = JSON.parse(fs.readFileSync('AlmanaxYears.json'))
+const requiredKeys = ['CHANNEL_ALMANAX']
 
 module.exports = async (client) => {
-  if (!nconf.get('CHANNEL_ALMANAX')) return
+  if (!requiredKeys.every(key => nconf.get(key))) return
   setInterval(() => {
     client.channels.fetch(nconf.get('CHANNEL_ALMANAX')).then(c => c.messages.fetch({ limit: 1, cache: false }).then(m => {
       if (m.last()?.embeds[0]?.data.title.substring(2, 12) === new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })) return

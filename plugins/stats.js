@@ -3,9 +3,10 @@ const delay = require('../helpers/delay')
 const fetch = require('../helpers/fetch')
 const fs = require('node:fs')
 const stats = JSON.parse(fs.readFileSync('stats.json'))
+const requiredKeys = ['STATS']
 
 module.exports = async () => {
-  if (!nconf.get('USER2')) return
+  if (!requiredKeys.every(key => nconf.get(key))) return
   let datename = ['17-04', '17-05', '17-06', '17-07', '17-08', '17-09', '17-10', '17-11', '17-12',
     '18-01', '18-02', '18-03', '18-04', '18-05', '18-06', '18-07', '18-08', '18-09', '18-10', '18-11', '18-12',
     '19-01', '19-02', '19-03', '19-04', '19-05', '19-06', '19-07', '19-08', '19-09', '19-10', '19-11', '19-12',

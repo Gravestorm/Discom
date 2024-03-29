@@ -8,12 +8,13 @@ const nconf = require('nconf')
 const { Pool } = require('pg')
 const pool = new Pool({ connectionString: nconf.get('DATABASE'), max: 20 })
 const date = require('../helpers/date')
+const requiredKeys = ['DATABASE']
 
 module.exports = {
   data: new SlashCommandBuilder().setName('info').setDescription('Displays information about a user or yourself')
     .addUserOption(option => option.setName('user').setDescription('Select a user')),
   async execute(interaction) {
-    if (!nconf.get('DATABASE')) return
+    if (!requiredKeys.every(key => nconf.get(key))) return
     await interaction.deferReply()
     const user = interaction.options.getMember('user') ? interaction.options.getMember('user') : interaction.member
     pool.query('SELECT * FROM members ORDER BY total_msg DESC', async (err, members) => {

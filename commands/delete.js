@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders')
 const { EmbedBuilder } = require('discord.js')
 const nconf = require('nconf')
 const random = require('randomcolor')
+const requiredKeys = ['CHANNEL_LOG']
 
 module.exports = {
   data: new SlashCommandBuilder().setName('delete').setDescription('Delete a number of messages in this channel, optionally from a user and/or move them to a channel')
@@ -9,7 +10,7 @@ module.exports = {
     .addUserOption(option => option.setName('user').setDescription('Select a user'))
     .addChannelOption(option => option.setName('channel').setDescription('Select a channel')),
   async execute(interaction) {
-    if (!nconf.get('CHANNEL_LOG')) return
+    if (!requiredKeys.every(key => nconf.get(key))) return
     const num = interaction.options.getNumber('number')
     if (num > 100) num = 100
     const user = interaction.options.getMember('user')
