@@ -10,7 +10,7 @@ const plugins = requireAll({ dirname: `${__dirname}/plugins`, filter: /^(?!-)(.+
 const commands = requireAll({ dirname: `${__dirname}/commands`, filter: /^(?!-)(.+)\.js$/ })
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] })
 client.commands = new Collection()
-for (const name in commands) client.commands.set(commands[name].data.name, commands[name])
+if (nconf.get('COMMANDS')) for (const name in commands) client.commands.set(commands[name].data.name, commands[name])
 
 client.on('ready', () => { console.log('Connected'); for (const name in plugins) plugins[name](client) })
 

@@ -4,20 +4,20 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@discordjs/rest": "^2.2.0",
-    "@napi-rs/canvas": "^0.1.51",
-    "axios": "^1.6.8",
+    "@discordjs/rest": "^2.3.0",
+    "@napi-rs/canvas": "^0.1.54",
+    "axios": "^1.7.4",
     "bluebird": "^3.7.2",
     "cheerio": "^1.0.0-rc.12",
-    "cron": "^3.1.6",
+    "cron": "^3.1.7",
     "diff": "^5.2.0",
-    "discord-api-types": "^0.37.77",
-    "discord.js": "^14.13.0",
+    "discord-api-types": "^0.37.94",
+    "discord.js": "^14.15.3",
     "express": "^4.19.2",
-    "hercai": "^12.2.0",
+    "hercai": "^12.3.2",
     "nconf": "^0.12.1",
     "node-fetch": "^3.3.2",
-    "pg": "^8.11.3",
+    "pg": "^8.12.0",
     "randomcolor": "^0.6.2",
     "request-promise": "^4.2.6",
     "require-all": "^3.0.0",
@@ -26,8 +26,8 @@
     "ytpl": "^2.3.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0",
-    "pm2": "^5.3.1"
+    "nodemon": "^3.1.4",
+    "pm2": "^5.4.2"
   },
   "scripts": {
     "start": "node index.js",
