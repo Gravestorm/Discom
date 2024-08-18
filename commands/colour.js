@@ -1,7 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
-const nconf = require('nconf')
 const random = require('randomcolor')
-const requiredKeys = ['ROLE_NITRO', 'ROLE_HELPER', 'ROLE_OMEGA']
 
 function encode(id) {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -22,7 +20,6 @@ module.exports = {
   data: new SlashCommandBuilder().setName('colour').setDescription('Change the colour of your name to a random or a specific one')
     .addStringOption(option => option.setName('colour').setDescription('Write a hex code of a colour or leave empty for a random one')),
   async execute(interaction) {
-    if (!requiredKeys.every(key => nconf.get(key))) return
     const guild = interaction.guild
     const member = interaction.member
     const roleName = encode(member.user.id)
@@ -35,7 +32,7 @@ module.exports = {
         name: roleName,
         color: colourInput || random(),
         position: guild.roles.cache.size - 5,
-        permissions: [],
+        permissions: 0,
         mentionable: false,
         hoist: false
       })
