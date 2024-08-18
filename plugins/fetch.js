@@ -4,7 +4,13 @@ const pool = new Pool({ connectionString: nconf.get('DATABASE'), max: 20 })
 const date = require('../helpers/date')
 const delay = require('../helpers/delay')
 const fetch = require('../helpers/fetch')
-const requiredKeys = ['USER22', 'DATABASE', 'SERVER', 'ROLE_IRON', 'ROLE_COPPER', 'ROLE_BRONZE', 'ROLE_SILVER', 'ROLE_GOLD', 'ROLE_CRYSTAL', 'ROLE_DIAMOND', 'ROLE_LEGEND', 'ROLE_EPIC', 'ROLE_OMEGA', 'ROLE_ACHIEVEMENT', 'ROLE_YEAR15', 'ROLE_YEAR16', 'ROLE_YEAR17', 'ROLE_YEAR18', 'ROLE_YEAR19', 'ROLE_YEAR20', 'ROLE_YEAR21', 'ROLE_YEAR22', 'ROLE_YEAR23', 'ROLE_YEAR24'];
+
+const requiredKeys = ['FETCH', 'USER', 'SERVER', 'DATABASE', 'ROLE_IRON', 'ROLE_COPPER', 'ROLE_BRONZE', 'ROLE_SILVER', 'ROLE_GOLD', 'ROLE_CRYSTAL', 'ROLE_DIAMOND', 'ROLE_LEGEND', 'ROLE_EPIC', 'ROLE_OMEGA', 'ROLE_ACHIEVEMENT', 'ROLE_YEAR15', 'ROLE_YEAR16', 'ROLE_YEAR17', 'ROLE_YEAR18', 'ROLE_YEAR19', 'ROLE_YEAR20', 'ROLE_YEAR21', 'ROLE_YEAR22', 'ROLE_YEAR23', 'ROLE_YEAR24']
+const baseUrl = `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search`
+const frChannels = ['297779639609327617', '364086525799038976', '1270756963575271424', '626165637252907045', '372100313890553856', '534121863857569792', '1079510661471666297']
+const enChannels = ['78581046714572800', '364081918116888576', '1270759070793597000', '626165608010088449', '297780920268750858', '534121764045717524']
+const otChannels = ['297779810279751680', '356038271140233216', '299523503592439809', '1006449121948868659', '297809615490383873', '297779846187188234', '582715083537514526', '678244173006241842', '297779010417590274']
+const allChannels = [...frChannels, ...enChannels, ...otChannels]
 
 async function fetchWithRetries(url) {
   let retries = 0
@@ -49,7 +55,6 @@ async function assignRoles(m, totalmsg, firstmsg, roleDate) {
   const year22 = nconf.get('ROLE_YEAR22')
   const year23 = nconf.get('ROLE_YEAR23')
   const year24 = nconf.get('ROLE_YEAR24')
-  if (m.id === '78600305175961600') roleDate = 2015
   switch (true) {
     case totalmsg < 50:
       [iron, copper, bronze, silver, gold, crystal, diamond, legend, epic, omega].some(r => { if (m.roles.cache.has(r)) m.roles.remove(r) }); break
@@ -125,10 +130,12 @@ async function assignRoles(m, totalmsg, firstmsg, roleDate) {
 }
 
 async function updateMember(m, totalmsg, pings, enmsg, frmsg, othermsg, refetch) {
-  let links = [`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?mentions=${m.id}&include_nsfw=true`,
-  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=1079510661471666297&include_nsfw=true`,
-  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&include_nsfw=true`,
-  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true`]
+  const links = [
+    `${baseUrl}?mentions=${m.id}&include_nsfw=true`, // Mentions URL
+    `${baseUrl}?author_id=${m.id}&${frChannels.map(id => `channel_id=${id}`).join('&')}&include_nsfw=true`,
+    `${baseUrl}?author_id=${m.id}&${enChannels.map(id => `channel_id=${id}`).join('&')}&include_nsfw=true`,
+    `${baseUrl}?author_id=${m.id}&${otChannels.map(id => `channel_id=${id}`).join('&')}&include_nsfw=true`
+  ]
   for (let i = 0; i < links.length; i++) {
     if (refetch === true && totalmsg === enmsg + frmsg + othermsg) continue
     const res = await fetchWithRetries(links[i])
@@ -154,10 +161,10 @@ async function fetchMember(m, refetch, data) {
   let msgperday = refetch ? data.msg_per_day : 0
   console.log('\nFetching member:', m.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperday, Date.parse(date(created, true)), Date.parse(date(joined, true)), Date.parse(date(rejoined, true)), firstmsg !== null ? Date.parse(date(firstmsg, true)) : null, refetch)
   if (refetch !== true) {
-    const resDate = await fetchWithRetries(`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=373576614505611282&include_nsfw=true&sort_by=timestamp&sort_order=asc&offset=0`)
+    const resDate = await fetchWithRetries(`${baseUrl}?author_id=${m.id}&channel_id=373576614505611282&include_nsfw=true&sort_by=timestamp&sort_order=asc&offset=0`)
     if (JSON.parse(resDate).total_results !== 0 && date(JSON.parse(resDate).messages[0][0].timestamp, true) < date(joined, true)) joined = JSON.parse(resDate).messages[0][0].timestamp
   }
-  const resMessages = await fetchWithRetries(`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?author_id=${m.id}&channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=1079510661471666297&channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true&sort_by=timestamp&sort_order=asc&offset=0`)
+  const resMessages = await fetchWithRetries(`${baseUrl}?author_id=${m.id}&${allChannels.map(id => `channel_id=${id}`).join('&')}&include_nsfw=true&sort_by=timestamp&sort_order=asc&offset=0`)
   if (JSON.parse(resMessages).total_results === 0) {
     firstmsg = null
     totalmsg = enmsg = frmsg = othermsg = pings = msgperday = 0
@@ -179,12 +186,13 @@ async function fetchMember(m, refetch, data) {
 }
 
 async function addNewMembers(g) {
-  for (const m of g.members.cache.values()) {
+  const sortedMembers = Array.from(g.members.cache.values()).sort((a, b) => a.id - b.id)
+  for (const m of sortedMembers) {
     try {
       const result = await pool.query('SELECT * FROM members WHERE id = $1', [m.id])
-      if (result.rows.length !== 0) continue
+      if (result.rows.length !== 0 || m.id === '78600305175961600') continue
       const data = await fetchMember(m)
-      pool.query('INSERT INTO members (id, name, created, joined, rejoined, first_msg, updated, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [m.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg !== null ? data.firstmsg : null, date(), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperday], async (err) => {
+      pool.query('INSERT INTO members (id, name, created, joined, rejoined, first_msg, updated, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [m.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg !== null ? data.firstmsg : null, Date.parse(date()), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperday], async (err) => {
         if (err) throw err
         await assignRoles(m, data.totalmsg, data.firstmsg, Math.floor((new Date(data.created).getFullYear() + new Date(data.joined).getFullYear() + new Date(data.rejoined).getFullYear() + (data.firstmsg !== null ? new Date(data.firstmsg).getFullYear() : new Date().getFullYear())) / 4))
       })
@@ -213,6 +221,7 @@ module.exports = async (client) => {
   const guild = await client.guilds.fetch(nconf.get('SERVER'))
   await guild.members.fetch({ force: true })
   await pool.connect()
+  await pool.query(`CREATE TABLE IF NOT EXISTS members (id VARCHAR(50) PRIMARY KEY, name VARCHAR(255), created BIGINT, joined BIGINT, rejoined BIGINT, first_msg BIGINT, updated BIGINT, total_msg INTEGER, en_msg INTEGER, fr_msg INTEGER, other_msg INTEGER, pings INTEGER, msg_per_day DECIMAL);`)
   await addNewMembers(guild)
   await removeOldMembers(guild)
   const dbMembers = await pool.query('SELECT * FROM members ORDER BY id ASC').catch(err => { throw err })
@@ -227,7 +236,7 @@ module.exports = async (client) => {
       if ((Date.parse(date()) - Date.parse(date(result.updated))) / (1000 * 60 * 60 * 24) < 11) continue
       const data = await fetchMember(m, true, result)
       pool.query('UPDATE members SET name = $2, created = $3, joined = $4, rejoined = $5, first_msg = $6, updated = $7, total_msg = $8, en_msg = $9, fr_msg = $10, other_msg = $11, pings = $12, msg_per_day = $13 WHERE id = $1',
-      [m.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg, date(), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperday], async (err) => {
+      [m.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg, Date.parse(date()), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperday], async (err) => {
         if (err) throw err
         await assignRoles(m, data.totalmsg, data.firstmsg, Math.floor((new Date(data.created).getFullYear() + new Date(data.joined).getFullYear() + new Date(data.rejoined).getFullYear() + (data.firstmsg !== null ? new Date(data.firstmsg).getFullYear() : new Date().getFullYear())) / 4))
       })
