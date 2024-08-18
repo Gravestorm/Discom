@@ -19,34 +19,29 @@ function isHex(colour) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder().setName('colour').setDescription('Change the colour of your name to a random or specific colour')
-    .addStringOption(option => option.setName('colour').setDescription('Write a colour name, number, hex code or rgb array')),
+  data: new SlashCommandBuilder().setName('colour').setDescription('Change the colour of your name to a random or a specific one')
+    .addStringOption(option => option.setName('colour').setDescription('Write a hex code of a colour or leave empty for a random one')),
   async execute(interaction) {
     if (!requiredKeys.every(key => nconf.get(key))) return
     const guild = interaction.guild
     const member = interaction.member
     const roleName = encode(member.user.id)
     let role = guild.roles.cache.find(r => r.name === roleName)
-    let colourInput = interaction.options.getString('colour') || random()
-    if (!isHex(colourInput)) {
-      try {
-        colourInput = random({ hue: colourInput })
-      } catch (err) {
-        colourInput = random()
-      }
-    }
+    let colourInput = interaction.options.getString('colour')
+    if (colourInput && !isHex(colourInput)) colourInput = random()
     if (isHex(colourInput) && !colourInput.startsWith('#')) colourInput = `#${colourInput}`
     if (!role) {
       role = await guild.roles.create({
         name: roleName,
-        color: colourInput,
+        color: colourInput || random(),
         position: guild.roles.cache.size - 5,
+        permissions: [],
         mentionable: false,
         hoist: false
       })
       await member.roles.add(role)
     } else {
-      await role.setColor(colourInput)
+      await role.setColor(colourInput || random())
     }
     await interaction.reply({ content: 'Colour changed successfully.\nLa couleur a changé avec succès.', ephemeral: true })
   }
