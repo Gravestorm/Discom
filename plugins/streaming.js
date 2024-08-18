@@ -1,5 +1,5 @@
 const nconf = require('nconf')
-const requiredKeys = ['ROLE_STREAMING', 'SERVER']
+const requiredKeys = ['STREAMING', 'ROLE_STREAMING', 'SERVER']
 
 module.exports = (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return

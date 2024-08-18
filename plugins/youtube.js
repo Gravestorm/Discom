@@ -1,6 +1,6 @@
 const nconf = require('nconf')
 const ytpl = require('ytpl')
-const requiredKeys = ['CHANNEL_ADS', 'CHANNEL_ANNONCES', 'CHANNEL_ANNOUNCEMENTS']
+const requiredKeys = ['YOUTUBE', 'CHANNEL_ADS', 'CHANNEL_ANNONCES', 'CHANNEL_ANNOUNCEMENTS']
 
 module.exports = (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return

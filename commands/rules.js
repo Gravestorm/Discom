@@ -1,6 +1,4 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
-const nconf = require('nconf')
-const requiredKeys = ['RULES']
 
 module.exports = {
   data: new SlashCommandBuilder().setName('rules').setDescription('Update the rules')
@@ -17,10 +15,9 @@ module.exports = {
   ).setRequired(true))
   .addStringOption(option => option.setName('newmessage').setDescription('Message ID of the new rule text in this channel').setRequired(true)),
   async execute(interaction) {
-    if (!requiredKeys.every(key => nconf.get(key))) return
     const oldMessage = interaction.options.getString('oldmessage')
     const newMessage = interaction.options.getString('newmessage')
     const channel = await interaction.guild.channels.fetch(oldMessage.startsWith('9842') ? '678708610762670101' : '678610533699813407')
-    await interaction.channel.messages.fetch(newMessage).then(m => channel.messages.fetch(oldMessage).then(msg => { msg.edit(m.content); m.delete() }))
+    await interaction.channel.messages.fetch(newMessage).then(m => channel.messages.fetch(oldMessage).then(msg => { msg.edit(m.content) }))
   }
 }

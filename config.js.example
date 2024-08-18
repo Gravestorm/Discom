@@ -44,6 +44,7 @@ module.exports = {
   // Nitro Booster/Streamer/Streaming/Leaderboard role IDs.
   // Used for the colour command and the nitro plugin.
   ROLE_NITRO: '',
+  ROLE_HELPER: '',
   // Used for the streaming plugin.
   ROLE_STREAMER: '',
   ROLE_STREAMING: '',
@@ -62,12 +63,32 @@ module.exports = {
   ROLE_LEGEND: '',
   ROLE_EPIC: '',
   ROLE_OMEGA: '',
+  ROLE_ACHIEVEMENT: '',
+  ROLE_YEAR15: '',
+  ROLE_YEAR16: '',
+  ROLE_YEAR17: '',
+  ROLE_YEAR18: '',
+  ROLE_YEAR19: '',
+  ROLE_YEAR20: '',
+  ROLE_YEAR21: '',
+  ROLE_YEAR22: '',
+  ROLE_YEAR23: '',
+  ROLE_YEAR24: '',
 
-  // Other variables. Can enter anything to enable or leave blank to disable.
-  // Used for the nickname plugin.
+  // Plugin variables, can enter anything to enable or leave blank to disable.
+  ALMANAX: '',
+  CLEANUP: '',
+  FETCH: '',
+  LEADERBOARD: '',
+  LOGS: '',
   NICKNAME: '',
-  // Used for the rules command.
-  RULES: '',
-  // Used for the express plugin.
+  NITRO: '',
+  PUBLISH: '',
+  RSS: '',
+  STATS: '',
+  STREAMING: '',
+  TWITTER: '',
+  YOUTUBE: '',
+  // Used for the express plugin, enter true if running locally.
   LOCAL: ''
 }

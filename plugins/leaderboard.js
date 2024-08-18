@@ -6,7 +6,7 @@ const pool = new Pool({ connectionString: nconf.get('DATABASE'), max: 20 })
 const date = require('../helpers/date')
 const delay = require('../helpers/delay')
 const fetch = require('../helpers/fetch')
-const requiredKeys = ['CHANNEL_LEADERBOARD', 'DATABASE', 'SERVER', 'USER']
+const requiredKeys = ['LEADERBOARD', 'CHANNEL_LEADERBOARD', 'USER', 'SERVER', 'DATABASE']
 
 function format(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')

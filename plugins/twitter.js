@@ -1,6 +1,6 @@
 const nconf = require('nconf')
 const twit = require('twit')
-const requiredKeys = ['CHANNEL_ANNOUNCEMENTS', 'CHANNEL_ANNONCES', 'CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN', 'ACCESS_TOKEN_SECRET']
+const requiredKeys = ['TWITTER', 'CHANNEL_ANNOUNCEMENTS', 'CHANNEL_ANNONCES', 'CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN', 'ACCESS_TOKEN_SECRET']
 
 module.exports = (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return

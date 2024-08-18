@@ -3,7 +3,7 @@ const fs = require('node:fs')
 const nconf = require('nconf')
 const random = require('randomcolor')
 const almanax = JSON.parse(fs.readFileSync('AlmanaxYears.json'))
-const requiredKeys = ['CHANNEL_ALMANAX']
+const requiredKeys = ['ALMANAX', 'CHANNEL_ALMANAX']
 
 module.exports = async (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
