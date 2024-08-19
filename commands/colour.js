@@ -24,13 +24,12 @@ module.exports = {
     const member = interaction.member
     const roleName = encode(member.user.id)
     let role = guild.roles.cache.find(r => r.name === roleName)
-    let colourInput = interaction.options.getString('colour')
-    if (colourInput && !isHex(colourInput)) colourInput = random()
-    if (isHex(colourInput) && !colourInput.startsWith('#')) colourInput = `#${colourInput}`
+    let input = interaction.options.getString('colour') || ''
+    input = isHex(input) ? (input.startsWith('#') ? input : `#${input}`) : random()
     if (!role) {
       role = await guild.roles.create({
         name: roleName,
-        color: colourInput || random(),
+        color: input,
         position: guild.roles.cache.size - 5,
         permissions: 0,
         mentionable: false,
@@ -38,7 +37,7 @@ module.exports = {
       })
       await member.roles.add(role)
     } else {
-      await role.setColor(colourInput || random())
+      await role.setColor(input)
     }
     await interaction.reply({ content: 'Colour changed successfully.\nLa couleur a changé avec succès.', ephemeral: true })
   }

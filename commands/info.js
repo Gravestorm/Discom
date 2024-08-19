@@ -6,9 +6,9 @@ const canvas = require('@napi-rs/canvas')
 const fs = require('fs').promises
 const nconf = require('nconf')
 const { Pool } = require('pg')
-const pool = new Pool({ connectionString: nconf.get('DATABASE'), max: 20 })
+const pool = new Pool({ connectionString: nconf.get('DATABASE_URL'), max: 20 })
 const date = require('../helpers/date')
-const requiredKeys = ['DATABASE']
+const requiredKeys = ['DATABASE_URL']
 
 module.exports = {
   data: new SlashCommandBuilder().setName('info').setDescription('Displays information about a user or yourself')

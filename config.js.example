@@ -13,12 +13,12 @@ module.exports = {
   SERVER: '',
 
   // User token.
-  // Used for the info commands and the fetch/leaderboard plugins.
+  // Used for the info command and the fetch/leaderboard plugins.
   USER: '',
 
   // Database URL.
-  // Used for the info commands and the fetch/leaderboard plugins.
-  DATABASE: '',
+  // Used for the info command and the fetch/leaderboard plugins.
+  DATABASE_URL: '',
 
   // Twitter keys. https://developer.twitter.com/en/apps
   // Used for the twitter plugin.
@@ -42,9 +42,8 @@ module.exports = {
   CHANNEL_LOG: '',
 
   // Nitro Booster/Streamer/Streaming/Leaderboard role IDs.
-  // Used for the colour command and the nitro plugin.
+  // Used for the nitro plugin.
   ROLE_NITRO: '',
-  ROLE_HELPER: '',
   // Used for the streaming plugin.
   ROLE_STREAMER: '',
   ROLE_STREAMING: '',
@@ -75,7 +74,7 @@ module.exports = {
   ROLE_YEAR23: '',
   ROLE_YEAR24: '',
 
-  // Plugin variables, can enter anything to enable or leave blank to disable.
+  // Plugin variables, enter true for the ones that should be enabled.
   ALMANAX: '',
   CLEANUP: '',
   FETCH: '',
@@ -89,6 +88,8 @@ module.exports = {
   STREAMING: '',
   TWITTER: '',
   YOUTUBE: '',
+  // Used for loading commands, enter true to enable.
+  COMMANDS: '',
   // Used for the express plugin, enter true if running locally.
   LOCAL: ''
 }
