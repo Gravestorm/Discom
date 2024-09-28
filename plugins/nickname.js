@@ -1,14 +1,23 @@
 const nconf = require('nconf')
-const pre = ['!', '"', '“', '”', '\'', '‘', '’', '#', '$', '%', '&', '(aa']
+const prefix = ['!', '"', '#', '$', '%', '&', '\'']
+const prefixParenthesis = [')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '|', '~', 'a', 'b', 'c']
 const requiredKeys = ['NICKNAME', 'SERVER']
 
 module.exports = (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
-  setInterval(() => {
-    client.guilds.fetch(nconf.get('SERVER')).then(g => g.members.fetch().then(m => m.forEach(m => {
-      if (m.displayName.startsWith('( ')) return m.setNickname(m.displayName.replace(/ /gi, ''))
-      if (m.displayName.startsWith('(') && m.displayName.charCodeAt(1) < 65) return m.setNickname(m.displayName.substring(m.length))
-      pre.forEach(e => { if (m.displayName.toLowerCase().startsWith(e)) { return m.setNickname(m.displayName.substring(e.length)) } })
-    })))
-  }, 1800000) // 1800000 = 30 minutes
+  client.on('guildMemberUpdate', (oldMember, newMember) => {
+    if (oldMember.displayName === newMember.displayName) return
+    let newDisplayName = newMember.displayName
+    while (prefix.some(char => newDisplayName.toLowerCase().startsWith(char))) {
+      const matchingChar = prefix.find(char => newDisplayName.toLowerCase().startsWith(char))
+      newDisplayName = newDisplayName.substring(matchingChar.length)
+    }
+    if (newDisplayName.startsWith('(')) {
+      let endIndex = 1
+      while (prefixParenthesis.includes(newDisplayName[endIndex])) endIndex++
+      if (endIndex > 1) newDisplayName = '(' + newDisplayName.substring(endIndex)
+    }
+    if (newDisplayName.trim() === '') newDisplayName = newMember.user.username
+    if (newDisplayName !== newMember.displayName) newMember.setNickname(newDisplayName).catch(console.error)
+  })
 }

@@ -31,7 +31,7 @@ module.exports = {
         name: roleName,
         color: input,
         position: guild.roles.cache.size - 5,
-        permissions: 0,
+        permissions: [],
         mentionable: false,
         hoist: false
       })

@@ -9,13 +9,10 @@ module.exports = (client) => {
       const channelId = nconf.get(channelKey)
       client.channels.fetch(channelId).then(c => c.messages.fetch({ limit: 100 }).then(msgs => {
         msgs.forEach(m => {
-          const ageInSeconds = (new Date() - m.createdTimestamp) / 1000
-          const shouldDelete = channelKey === 'CHANNEL_ADS'
-            ? ageInSeconds > 604800 && m.content.includes('twitch.tv') // 1 week
-            : ageInSeconds > 5000000 && m.author.bot // 2 months
-          if (shouldDelete) m.delete()
+          const daysSincePosted = (new Date() - m.createdTimestamp) / (1000 * 60 * 60 * 24)
+          if (channelKey === 'CHANNEL_ADS' ? daysSincePosted > 7 && m.content.includes('twitch.tv') : daysSincePosted > 60 && m.author.bot) m.delete()
         })
-      })).catch(err => console.error(`Error fetching messages for ${channelId}: ${err}`))
+      })).catch(err => console.error(`Error fetching messages for ${channelId}:`, err))
     })
   }, 14400000) // 14400000 = 240 minutes
 }

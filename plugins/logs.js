@@ -4,28 +4,54 @@ const delay = require('../helpers/delay')
 const nconf = require('nconf')
 const random = require('randomcolor')
 const requiredKeys = ['LOGS', 'CHANNEL_LOG', 'SERVER']
+const exemptChannels = ['ads', 'almanax', 'annonces', 'announcements', 'helpers', 'leaderboard', 'madhouse', 'regles-info', 'rules-info', 'server']
 
 module.exports = async (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
-  client.on('messageDelete', m => {
-    if (m.guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'leaderboard', 'madhouse', 'regles-info', 'rules-info', 'server'].includes(m.channel.name) || !m.guild.channels.fetch(nconf.get('CHANNEL_LOG'))) return
-    m.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send({ embeds: [new EmbedBuilder().setAuthor({ name: m.author.username, iconURL: m.author.displayAvatarURL() }).setDescription(m.content ? m.content : ' ').setImage(m.attachments.first() ? m.attachments.first().proxyURL : null).setFooter({ text: `#${m.channel.name}` }).setTimestamp(m.createdTimestamp).setColor(random())] }))
+  const isExempt = (channel) => exemptChannels.includes(channel.name)
+  const fetchLogChannel = async (guild) => guild.channels.fetch(nconf.get('CHANNEL_LOG'))
+  const logMessage = (channel, embed) => channel.send({ embeds: [embed] })
+  const generateEmbed = (message, description, timestamp, color = random()) => new EmbedBuilder()
+    .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+    .setDescription(description).setFooter({ text: `#${message.channel.name}` }).setTimestamp(timestamp).setColor(color)
+
+  client.on('messageDelete', async (message) => {
+    if (message.guildId !== nconf.get('SERVER') || isExempt(message.channel)) return
+    const logChannel = await fetchLogChannel(message.guild)
+    if (!logChannel) return
+    const embed = generateEmbed(message, message.content || ' ', message.createdTimestamp).setImage(message.attachments.first()?.proxyURL || null)
+    logMessage(logChannel, embed)
   })
-  client.on('messageDeleteBulk', msgs => {
-    if (msgs.first().guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'leaderboard', 'madhouse', 'regles-info', 'rules-info', 'server'].includes(msgs.first().channel.name) || !msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG'))) return
-    msgs.first().guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => msgs.reverse().forEach(m => c.send({ embeds: [new EmbedBuilder().setAuthor({ name: m.author.username, iconURL: m.author.displayAvatarURL() }).setDescription(m.content ? m.content : ' ').setImage(m.attachments.first() ? m.attachments.first().proxyURL : null).setFooter({ text: `#${m.channel.name}` }).setTimestamp(m.createdTimestamp).setColor(random())] })))
+
+  client.on('messageDeleteBulk', async (messages) => {
+    const firstMsg = messages.first()
+    if (firstMsg.guildId !== nconf.get('SERVER') || isExempt(firstMsg.channel)) return
+    const logChannel = await fetchLogChannel(firstMsg.guild)
+    if (!logChannel) return
+    messages.reverse().forEach((msg) => {
+      const embed = generateEmbed( msg, msg.content || ' ', msg.createdTimestamp).setImage(msg.attachments.first()?.proxyURL || null)
+      logMessage(logChannel, embed)
+    })
   })
-  client.on('guildBanAdd', async ban => {
-    if (ban.guild.id !== nconf.get('SERVER') || !ban.guild.channels.fetch(nconf.get('CHANNEL_LOG'))) return
+
+  client.on('guildBanAdd', async (ban) => {
+    if (ban.guild.id !== nconf.get('SERVER')) return
     await delay(10000)
+    const logChannel = await fetchLogChannel(ban.guild)
+    if (!logChannel) return
     const log = await ban.guild.fetchAuditLogs({ limit: 25, type: AuditLogEvent.MemberBanAdd })
-    const l = log.entries.find(t => ban.user.id === t.target.id)
-    ban.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send(l ? `${l.target.username}#${l.target.discriminator} (${l.target.id}) has been killed by <@${l.executor.id}> on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })} for ${l.reason ? l.reason : 'fun'}` : `${ban.user.username}#${ban.user.discriminator} (${ban.user.id}) has been killed on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })} by a mysterious fellow without any witnesses`))
+    const entry = log.entries.find(e => ban.user.id === e.target.id)
+    const message = entry ? `${entry.target.username} (${entry.target.id}) was banned by <@${entry.executor.id}> on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })} for ${entry.reason || 'fun'}` : `${ban.user.username} (${ban.user.id}) was banned on ${new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })} without witnesses`
+    logChannel.send(message)
   })
-  client.on('messageUpdate', (oldMessage, newMessage) => {
-    if (newMessage.author.bot || oldMessage.content === newMessage.content || newMessage.guildId !== nconf.get('SERVER') || ['ads', 'almanax', 'annonces', 'announcements', 'leaderboard', 'madhouse', 'regles-info', 'rules-info', 'server'].includes(newMessage.channel.name) || !newMessage.guild.channels.fetch(nconf.get('CHANNEL_LOG'))) return
+
+  client.on('messageUpdate', async (oldMessage, newMessage) => {
+    if (newMessage.author.bot || oldMessage.content === newMessage.content || isExempt(newMessage.channel)) return
+    const logChannel = await fetchLogChannel(newMessage.guild)
+    if (!logChannel) return
     const differences = diffChars(oldMessage.content, newMessage.content)
     const formattedChanges = differences.map(part => part.added ? `**${part.value}**` : part.removed ? `~~${part.value}~~` : part.value).join('')
-    newMessage.guild.channels.fetch(nconf.get('CHANNEL_LOG')).then(c => c.send({ embeds: [new EmbedBuilder().setAuthor({ name: newMessage.author.username, iconURL: newMessage.author.displayAvatarURL() }).setDescription(`**Old:**\n${oldMessage.content.slice(0, 2000)}\n\n**New:**\n${formattedChanges.slice(0, 2000)}`).setFooter({ text: `#${newMessage.channel.name}` }).setTimestamp(newMessage.editedTimestamp).setColor(random())] }))
+    const embed = generateEmbed(newMessage, `**Old:**\n${oldMessage.content.slice(0, 2000)}\n\n**New:**\n${formattedChanges.slice(0, 2000)}`, newMessage.editedTimestamp)
+    logMessage(logChannel, embed)
   })
 }
