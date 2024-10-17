@@ -1,29 +1,31 @@
 const nconf = require('nconf')
 const parser = require('rss-parser')
-const P = new parser()
-const url = ['news', 'devblog', 'changelog']
 const requiredKeys = ['RSS', 'CHANNEL_ANNONCES', 'CHANNEL_ANNOUNCEMENTS']
+const links = ['news', 'devblog', 'changelog']
+const languages = ['en', 'fr']
+const rssChannels = ['CHANNEL_ANNOUNCEMENTS', 'CHANNEL_ANNONCES']
 
 module.exports = (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
-  setInterval(() => {
-    url.forEach(n => {
-      P.parseURL(`https://www.dofus.com/en/rss/${n}.xml`, (err, feed) => {
-        if (err || !feed || (new Date - new Date(feed.items[0].isoDate).getTime()) / 1000 > 604800) return
-        let post = feed.items[0].link.trim()
-        client.channels.fetch(nconf.get('CHANNEL_ANNOUNCEMENTS')).then(c => c.messages.fetch().then(msgs => {
-          if (msgs.find(m => m.content === post)) return
-          c.send(post).then(m => m.crosspost())
-        }))
-      })
-      P.parseURL(`https://www.dofus.com/fr/rss/${n}.xml`, (err, feed) => {
-        if (err || !feed || (new Date - new Date(feed.items[0].isoDate).getTime()) / 1000 > 604800) return
-        let post = feed.items[0].link.trim()
-        client.channels.fetch(nconf.get('CHANNEL_ANNONCES')).then(c => c.messages.fetch().then(msgs => {
-          if (msgs.find(m => m.content === post)) return
-          c.send(post).then(m => m.crosspost())
-        }))
-      })
-    })
-  }, 300000) // 300000 = 5 minutes
+  const Parser = new parser()
+  const processFeeds = async () => {
+    for (const link of links) {
+      for (let i = 0; i < languages.length; i++) {
+        const language = languages[i]
+        const rssChannel = rssChannels[i]
+        try {
+          const feed = await Parser.parseURL(`https://www.dofus.com/${language}/rss/${link}.xml`)
+          const latestItem = feed.items[0]
+          if (new Date() - new Date(latestItem.isoDate) > 604800000) continue
+          const post = latestItem.link.trim()
+          const channel = await client.channels.fetch(nconf.get(rssChannel))
+          const messages = await channel.messages.fetch()
+          if (!messages.some(m => m.content === post)) await channel.send(post).crosspost()
+        } catch (err) {
+          console.error(`Error processing feed ${link} in ${language}:`, err)
+        }
+      }
+    }
+  }
+  setInterval(processFeeds, 300000) // 5 minutes
 }

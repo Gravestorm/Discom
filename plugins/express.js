@@ -1,13 +1,13 @@
 const express = require('express')
 const nconf = require('nconf')
-const app = express()
-const requiredKeys = ['LOCAL']
+const path = require('path')
 
 module.exports = () => {
-  if (requiredKeys.every(key => nconf.get(key))) return
-  if (!nconf.get('PORT')) nconf.set('PORT', 5000)
-  app.set('port', (nconf.get('PORT')))
-  app.use(express.static(__dirname + '/public'))
-  app.set('views', __dirname + '/views')
-  app.listen(app.get('port'), () => { console.log('Express connected ', app.get('port')) })
+  if (nconf.get('LOCAL')) return
+  const app = express()
+  const port = nconf.get('PORT') || 5000
+  app.use(express.static(path.join(__dirname, 'public')))
+    .set('views', path.join(__dirname, 'views'))
+    .set('port', port)
+    .listen(port, () => console.log(`Express connected on port ${port}`))
 }

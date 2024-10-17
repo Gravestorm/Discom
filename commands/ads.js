@@ -7,7 +7,8 @@ module.exports = {
     .addStringOption(option => option.setName('url').setDescription('Twitch/Youtube/Art URL').setRequired(true)),
   async execute(interaction) {
     if (!requiredKeys.every(key => nconf.get(key))) return
-    await interaction.guild.channels.fetch(nconf.get('CHANNEL_BOT')).then(c => c.send(`${interaction.user} wants to access #ads (URL: <${interaction.options.getString('url')}>)`))
+    const channel = await interaction.guild.channels.fetch(nconf.get('CHANNEL_BOT'))
+    await channel.send(`${interaction.user} wants to access #ads (URL: <${interaction.options.getString('url')}>)`)
     await interaction.reply({ content: 'Application received successfully, please wait patiently while we review and give you the role.\nCandidature reçue avec succès, veuillez patienter pendant que nous examinons et vous donnons le rôle.', ephemeral: true })
   }
 }

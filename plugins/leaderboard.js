@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('discord.js')
 const nconf = require('nconf')
-const random = require('randomcolor')
+const randomColor = require('randomcolor')
 const { Pool } = require('pg')
 const pool = new Pool({ connectionString: nconf.get('DATABASE'), max: 20 })
 const date = require('../helpers/date')
@@ -8,262 +8,87 @@ const delay = require('../helpers/delay')
 const fetch = require('../helpers/fetch')
 const requiredKeys = ['LEADERBOARD', 'CHANNEL_LEADERBOARD', 'USER', 'SERVER', 'DATABASE']
 
-function format(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+const format = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+const createLeaderboard = async (query, formatFn = x => x) => {
+  const members = await pool.query(query)
+  return members.rows.reduce((acc, m, i) => {
+    const rank = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'][i] || '#️⃣'
+    const color = ['[1;31m', '[1;34m', '[1;35m', '[1;33m', '[1;33m', '[1;32m'][i] || '[1;36m'
+    const wrapper = i < 3 ? ['<<<', '<<', '<'][i] : i < 10 ? '[]' : ''
+    const value = formatFn(m[Object.keys(m)[1]])
+    const line = `${rank} ${color}${value}[0m ${wrapper[0] || ''}${m.name}${wrapper[1] || ''}\n`
+    return i === 9 ? acc + line + '[1;37m---[0m\n' : acc + line
+  }, '')
 }
 
 module.exports = async (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
-  let tC = tJ = tJR = tF = tR = tOT = tFR = tEN = tP = tM = tT = ''
-  let serverT = serverEN = serverFR = serverOT = totalT = totalEN = totalFR = totalOT = 0
-  let users = user0 = user1 = user10 = user100 = userEN = userFR = userOT = userENFR = userALL = 0
-  let uris = [`https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&include_nsfw=true`,
-  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=1079510661471666297&include_nsfw=true`,
-  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true`,
-  `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?channel_id=78581046714572800&channel_id=364081918116888576&channel_id=626165608010088449&channel_id=534121764045717524&channel_id=297780920268750858&channel_id=297779639609327617&channel_id=364086525799038976&channel_id=626165637252907045&channel_id=534121863857569792&channel_id=372100313890553856&channel_id=1079510661471666297&channel_id=297779810279751680&channel_id=356038271140233216&channel_id=299523503592439809&channel_id=297809615490383873&channel_id=297779846187188234&channel_id=892471107318345749&channel_id=582715083537514526&channel_id=297779010417590274&channel_id=678244173006241842&include_nsfw=true`]
-
-  pool.query('SELECT * FROM members', [], (err, members) => {
-    if (err) throw err
-    users = members.rowCount
-    members.rows.forEach((m) => {
-      if (m.total_msg === 0) user0++
-      if (m.total_msg > 0 && m.total_msg < 11) user1++
-      if (m.total_msg > 10 && m.total_msg < 100) user10++
-      if (m.total_msg > 99) user100++
-      if (m.en_msg > 0 && m.fr_msg === 0) userEN++
-      if (m.en_msg === 0 && m.fr_msg > 0) userFR++
-      if (m.en_msg === 0 && m.fr_msg === 0 && m.other_msg > 0) userOT++
-      if (m.en_msg > 0 && m.fr_msg > 0) userENFR++
-      if (m.en_msg > 0 && m.fr_msg > 0 && m.other_msg > 0) userALL++
-      totalT += m.total_msg
-      totalEN += m.en_msg
-      totalFR += m.fr_msg
-      totalOT += m.other_msg
-    })
+  const stats = { users: 0, user0: 0, user1: 0, user10: 0, user100: 0, userEN: 0, userFR: 0, userOT: 0, userENFR: 0, userALL: 0, totalT: 0, totalEN: 0, totalFR: 0, totalOT: 0 }
+  const serverStats = { T: 0, EN: 0, FR: 0, OT: 0 }
+  const members = await pool.query('SELECT * FROM members')
+  members.rows.forEach(member => {
+    stats.users++
+    if (member.total_msg === 0) stats.user0++
+    else if (member.total_msg < 11) stats.user1++
+    else if (member.total_msg < 100) stats.user10++
+    else stats.user100++
+    if (member.en_msg > 0 && member.fr_msg === 0) stats.userEN++
+    if (member.en_msg === 0 && member.fr_msg > 0) stats.userFR++
+    if (member.en_msg === 0 && member.fr_msg === 0 && member.other_msg > 0) stats.userOT++
+    if (member.en_msg > 0 && member.fr_msg > 0) stats.userENFR++
+    if (member.en_msg > 0 && member.fr_msg > 0 && member.other_msg > 0) stats.userALL++
+    stats.totalT += member.total_msg
+    stats.totalEN += member.en_msg
+    stats.totalFR += member.fr_msg
+    stats.totalOT += member.other_msg
   })
 
-  pool.query('SELECT * FROM members ORDER BY created ASC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tC += `1️⃣ [1;2m[1;31m${date(m.created, true)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tC += `2️⃣ [1;34m${date(m.created, true)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tC += `3️⃣ [1;35m${date(m.created, true)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tC += `4️⃣ [1;33m${date(m.created, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tC += `5️⃣ [1;33m${date(m.created, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tC += `6️⃣ [1;32m${date(m.created, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tC += `7️⃣ [1;32m${date(m.created, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tC += `8️⃣ [1;32m${date(m.created, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tC += `9️⃣ [1;32m${date(m.created, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tC += `🔟 [1;32m${date(m.created, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tC += `#️⃣ [1;36m${date(m.created, true)}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query('SELECT * FROM members ORDER BY joined ASC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tJ += `1️⃣ [1;2m[1;31m${date(m.joined, true)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tJ += `2️⃣ [1;34m${date(m.joined, true)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tJ += `3️⃣ [1;35m${date(m.joined, true)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tJ += `4️⃣ [1;33m${date(m.joined, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tJ += `5️⃣ [1;33m${date(m.joined, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tJ += `6️⃣ [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tJ += `7️⃣ [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tJ += `8️⃣ [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tJ += `9️⃣ [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tJ += `🔟 [1;32m${date(m.joined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tJ += `#️⃣ [1;36m${date(m.joined, true)}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query('SELECT * FROM members ORDER BY rejoined ASC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tJR += `1️⃣ [1;2m[1;31m${date(m.rejoined, true)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tJR += `2️⃣ [1;34m${date(m.rejoined, true)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tJR += `3️⃣ [1;35m${date(m.rejoined, true)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tJR += `4️⃣ [1;33m${date(m.rejoined, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tJR += `5️⃣ [1;33m${date(m.rejoined, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tJR += `6️⃣ [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tJR += `7️⃣ [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tJR += `8️⃣ [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tJR += `9️⃣ [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tJR += `🔟 [1;32m${date(m.rejoined, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tJR += `#️⃣ [1;36m${date(m.rejoined, true)}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query('SELECT * FROM members ORDER BY first_msg ASC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tF += `1️⃣ [1;2m[1;31m${date(m.first_msg, true)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tF += `2️⃣ [1;34m${date(m.first_msg, true)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tF += `3️⃣ [1;35m${date(m.first_msg, true)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tF += `4️⃣ [1;33m${date(m.first_msg, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tF += `5️⃣ [1;33m${date(m.first_msg, true)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tF += `6️⃣ [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tF += `7️⃣ [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tF += `8️⃣ [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tF += `9️⃣ [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tF += `🔟 [1;32m${date(m.first_msg, true)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tF += `#️⃣ [1;36m${date(m.first_msg, true)}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query(
-    'SELECT id, name, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day, ' +
-    'rank() OVER (ORDER BY total_msg DESC) AS total_msg_rank, ' +
-    'rank() OVER (ORDER BY en_msg DESC) AS en_msg_rank, ' +
-    'rank() OVER (ORDER BY fr_msg DESC) AS fr_msg_rank, ' +
-    'rank() OVER (ORDER BY other_msg DESC) AS other_msg_rank, ' +
-    'rank() OVER (ORDER BY pings DESC) AS pings_rank, ' +
-    'rank() OVER (ORDER BY msg_per_day DESC) AS msg_per_day_rank ' +
-    'FROM members', [], (err, members) => {
-    if (err) throw err
-    const combinedRanks = []
-    members.rows.forEach((row) => {
-      const rankSum = Number(row.total_msg_rank) + Number(row.en_msg_rank) + Number(row.fr_msg_rank) + Number(row.other_msg_rank) + Number(row.pings_rank) + Number(row.msg_per_day_rank)
-      combinedRanks.push({ name: row.name, rankSum })
-    })
-    const top20 = combinedRanks.sort((a, b) => a.rankSum - b.rankSum).slice(0, 20)
-    top20.forEach((m, i) => {
-      if (i === 0) tR += `1️⃣ [1;2m[1;31m${(m.rankSum / 6).toFixed(2)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tR += `2️⃣ [1;34m${(m.rankSum / 6).toFixed(2)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tR += `3️⃣ [1;35m${(m.rankSum / 6).toFixed(2)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tR += `4️⃣ [1;33m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tR += `5️⃣ [1;33m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tR += `6️⃣ [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tR += `7️⃣ [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tR += `8️⃣ [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tR += `9️⃣ [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tR += `🔟 [1;32m${(m.rankSum / 6).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tR += `#️⃣ [1;36m${(m.rankSum / 6).toFixed(2)}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query('SELECT * FROM members ORDER BY other_msg DESC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tOT += `1️⃣ [1;2m[1;31m${m.other_msg}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tOT += `2️⃣ [1;34m${m.other_msg}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tOT += `3️⃣ [1;35m${m.other_msg}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tOT += `4️⃣ [1;33m${m.other_msg}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tOT += `5️⃣ [1;33m${m.other_msg}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tOT += `6️⃣ [1;32m${m.other_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tOT += `7️⃣ [1;32m${m.other_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tOT += `8️⃣ [1;32m${m.other_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tOT += `9️⃣ [1;32m${m.other_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tOT += `🔟 [1;32m${m.other_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tOT += `#️⃣ [1;36m${m.other_msg}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query('SELECT * FROM members ORDER BY fr_msg DESC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tFR += `1️⃣ [1;2m[1;31m${m.fr_msg}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tFR += `2️⃣ [1;34m${m.fr_msg}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tFR += `3️⃣ [1;35m${m.fr_msg}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tFR += `4️⃣ [1;33m${m.fr_msg}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tFR += `5️⃣ [1;33m${m.fr_msg}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tFR += `6️⃣ [1;32m${m.fr_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tFR += `7️⃣ [1;32m${m.fr_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tFR += `8️⃣ [1;32m${m.fr_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tFR += `9️⃣ [1;32m${m.fr_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tFR += `🔟 [1;32m${m.fr_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tFR += `#️⃣ [1;36m${m.fr_msg}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query('SELECT * FROM members ORDER BY en_msg DESC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tEN += `1️⃣ [1;2m[1;31m${m.en_msg}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tEN += `2️⃣ [1;34m${m.en_msg}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tEN += `3️⃣ [1;35m${m.en_msg}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tEN += `4️⃣ [1;33m${m.en_msg}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tEN += `5️⃣ [1;33m${m.en_msg}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tEN += `6️⃣ [1;32m${m.en_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tEN += `7️⃣ [1;32m${m.en_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tEN += `8️⃣ [1;32m${m.en_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tEN += `9️⃣ [1;32m${m.en_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tEN += `🔟 [1;32m${m.en_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tEN += `#️⃣ [1;36m${m.en_msg}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query('SELECT * FROM members ORDER BY pings DESC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tP += `1️⃣ [1;2m[1;31m${m.pings}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tP += `2️⃣ [1;34m${m.pings}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tP += `3️⃣ [1;35m${m.pings}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tP += `4️⃣ [1;33m${m.pings}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tP += `5️⃣ [1;33m${m.pings}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tP += `6️⃣ [1;32m${m.pings}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tP += `7️⃣ [1;32m${m.pings}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tP += `8️⃣ [1;32m${m.pings}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tP += `9️⃣ [1;32m${m.pings}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tP += `🔟 [1;32m${m.pings}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tP += `#️⃣ [1;36m${m.pings}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query('SELECT * FROM members ORDER BY msg_per_day DESC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tM += `1️⃣ [1;2m[1;31m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tM += `2️⃣ [1;34m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tM += `3️⃣ [1;35m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tM += `4️⃣ [1;33m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tM += `5️⃣ [1;33m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tM += `6️⃣ [1;32m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tM += `7️⃣ [1;32m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tM += `8️⃣ [1;32m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tM += `9️⃣ [1;32m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tM += `🔟 [1;32m${Number(m.msg_per_day).toFixed(2)}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tM += `#️⃣ [1;36m${Number(m.msg_per_day).toFixed(2)}[0m ${m.name}\n`
-    })
-  })
-
-  pool.query('SELECT * FROM members ORDER BY total_msg DESC LIMIT 20', [], (err, members) => {
-    if (err) throw err
-    members.rows.forEach((m, i) => {
-      if (i === 0) tT += `1️⃣ [1;2m[1;31m${m.total_msg}[0m [1;37m<<< [0m[1;31m${m.name}[0m [1;37m>>>[0m\n`
-      if (i === 1) tT += `2️⃣ [1;34m${m.total_msg}[0m [1;37m<<[0m [1;34m${m.name}[0m [1;37m>>[0m\n`
-      if (i === 2) tT += `3️⃣ [1;35m${m.total_msg}[0m [1;37m<[0m [1;35m${m.name}[0m [1;37m>[0m\n`
-      if (i === 3) tT += `4️⃣ [1;33m${m.total_msg}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 4) tT += `5️⃣ [1;33m${m.total_msg}[0m [1;37m[[0m [1;33m${m.name}[0m [1;37m][0m\n`
-      if (i === 5) tT += `6️⃣ [1;32m${m.total_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 6) tT += `7️⃣ [1;32m${m.total_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 7) tT += `8️⃣ [1;32m${m.total_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 8) tT += `9️⃣ [1;32m${m.total_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n`
-      if (i === 9) tT += `🔟 [1;32m${m.total_msg}[0m [1;37m[[0m [1;32m${m.name}[0m [1;37m][0m\n[1;37m---[0m\n`
-      if (i > 9 && i < 20) tT += `#️⃣ [1;36m${m.total_msg}[0m ${m.name}\n`
-    })
-  })
-
-  const channel = await client.channels.fetch(nconf.get('CHANNEL_LEADERBOARD'))
-  const messages = await channel.messages.fetch({ limit: 12, cache: false })
-  await messages.forEach(message => message.delete())
-  for (let i = 0; i < uris.length; i++) {
-    await delay(6000)
-    const res = await fetch(uris[i]).catch(err => { throw err })
-    if (i === 0) serverEN = JSON.parse(res).total_results
-    if (i === 1) serverFR = JSON.parse(res).total_results
-    if (i === 2) serverOT = JSON.parse(res).total_results
-    if (i === 3) serverT = JSON.parse(res).total_results
+  const leaderboards = {
+    created: await createLeaderboard('SELECT * FROM members ORDER BY created ASC LIMIT 20', date),
+    joined: await createLeaderboard('SELECT * FROM members ORDER BY joined ASC LIMIT 20', date),
+    rejoined: await createLeaderboard('SELECT * FROM members ORDER BY rejoined ASC LIMIT 20', date),
+    firstMsg: await createLeaderboard('SELECT * FROM members ORDER BY first_msg ASC LIMIT 20', date),
+    overallRank: await createLeaderboard(`SELECT name, (rank() OVER (ORDER BY total_msg DESC) + rank() OVER (ORDER BY en_msg DESC) + rank() OVER (ORDER BY fr_msg DESC) + rank() OVER (ORDER BY other_msg DESC) + rank() OVER (ORDER BY pings DESC) + rank() OVER (ORDER BY msg_per_day DESC)) / 6.0 AS rank FROM members ORDER BY rank ASC LIMIT 20`, x => x.toFixed(2)),
+    otherMsg: await createLeaderboard('SELECT * FROM members ORDER BY other_msg DESC LIMIT 20'),
+    frMsg: await createLeaderboard('SELECT * FROM members ORDER BY fr_msg DESC LIMIT 20'),
+    enMsg: await createLeaderboard('SELECT * FROM members ORDER BY en_msg DESC LIMIT 20'),
+    pings: await createLeaderboard('SELECT * FROM members ORDER BY pings DESC LIMIT 20'),
+    msgPerDay: await createLeaderboard('SELECT * FROM members ORDER BY msg_per_day DESC LIMIT 20', x => Number(x).toFixed(2)),
+    totalMsg: await createLeaderboard('SELECT * FROM members ORDER BY total_msg DESC LIMIT 20')
   }
-  await channel.send(`Out of **${format(users)}** users: **${format(user0)}** sent 0 messages, **${format(user1)}** sent 1~10 messages, **${format(user10)}** sent 11~99 messages, **${format(user100)}** sent 100+ messages.\nOut of **${format(user1 + user10 + user100)}** users who sent a message: **${format(userEN)}** only in English channels, **${format(userFR)}** only in French channels, **${format(userOT)}** only in Other channels,\n**${format(userENFR)}** in both English and French channels and **${format(userALL)}** in English, French, as well as Other channels.\n\nMessages sent in the server:\nAll channels: **${format(serverT)}** (**${format(totalT)}** from users still in the server, **${format(serverT - totalT)}** from users no longer in the server)\nEnglish channels: **${format(serverEN)} (${format(totalEN)}** from users still in the server, **${format(serverEN - totalEN)}** from users no longer in the server)\nFrench channels: **${format(serverFR)} (${format(totalFR)}** from users still in the server, **${format(serverFR - totalFR)}** from users no longer in the server)\nOther channels: **${format(serverOT)} (${format(totalOT)}** from users still in the server, **${format(serverOT - totalOT)}** from users no longer in the server)`)
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Oldest account creation date\nDate de création de compte la plus ancienne').setDescription(`\`\`\`ansi\n${tC}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Oldest server join date without rejoins\nDate d\'adhésion au serveur la plus ancienne sans réadhésions').setDescription(`\`\`\`ansi\n${tJ}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Oldest server join date with rejoins\nDate d\'adhésion au serveur la plus ancienne avec réadhésions').setDescription(`\`\`\`ansi\n${tJR}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Oldest first message sent\nPremier message envoyé le plus ancien').setDescription(`\`\`\`ansi\n${tF}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Overall rank from the info below\nClassement global à partir des informations ci-dessous').setDescription(`\`\`\`ansi\n${tR}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in Other channels\nTotal des messages envoyés sur les salons Autres').setDescription(`\`\`\`ansi\n${tOT}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in French channels\nTotal des messages envoyés sur les salons Françaises').setDescription(`\`\`\`ansi\n${tFR}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in English channels\nTotal des messages envoyés sur les salons Anglaises').setDescription(`\`\`\`ansi\n${tEN}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Most pinged users\nUtilisateurs les plus sollicités').setDescription(`\`\`\`ansi\n${tP}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Average messages per day since account creation\nMessages moyens par jour depuis la création du compte').setDescription(`\`\`\`ansi\n${tM}\`\`\``).setColor(random())] })
-  await channel.send({ embeds: [new EmbedBuilder().setTitle('Total messages sent in all channels\nTotal des messages envoyés sur tous les salons').setDescription(`\`\`\`ansi\n${tT}\`\`\``).setColor(random())] })
+  const channel = await client.channels.fetch(nconf.get('CHANNEL_LEADERBOARD'))
+  await channel.bulkDelete(12)
+  const links = ['EN', 'FR', 'OT', 'T'].map(type => `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search?${nconf.get(`CHANNELS_${type}`).map(id => `channel_id=${id}`).join('&')}&include_nsfw=true`)
+  for (const [i, link] of links.entries()) {
+    await delay(6000)
+    const res = await fetch(link)
+    const result = JSON.parse(res)
+    serverStats[Object.keys(serverStats)[i]] = result.total_results
+  }
+  const summaryMessage = `Out of **${format(stats.users)}** users: **${format(stats.user0)}** sent 0 messages, **${format(stats.user1)}** sent 1~10 messages, **${format(stats.user10)}** sent 11~99 messages, **${format(stats.user100)}** sent 100+ messages.\n
+  Out of **${format(stats.user1 + stats.user10 + stats.user100)}** users who sent a message: **${format(stats.userEN)}** only in English channels, **${format(stats.userFR)}** only in French channels, **${format(stats.userOT)}** only in Other channels,\n
+  **${format(stats.userENFR)}** in both English and French channels and **${format(stats.userALL)}** in English, French, as well as Other channels.\n\n
+  Messages sent in the server:\n
+  All channels: **${format(serverStats.T)}** (**${format(stats.totalT)}** from users still in the server, **${format(serverStats.T - stats.totalT)}** from users no longer in the server)\n
+  English channels: **${format(serverStats.EN)} (${format(stats.totalEN)}** from users still in the server, **${format(serverStats.EN - stats.totalEN)}** from users no longer in the server)\n
+  French channels: **${format(serverStats.FR)} (${format(stats.totalFR)}** from users still in the server, **${format(serverStats.FR - stats.totalFR)}** from users no longer in the server)\n
+  Other channels: **${format(serverStats.OT)} (${format(stats.totalOT)}** from users still in the server, **${format(serverStats.OT - stats.totalOT)}** from users no longer in the server)`
+  await channel.send(summaryMessage)
+  const titles = [
+    'Oldest account creation date\nDate de création de compte la plus ancienne',
+    'Oldest server join date without rejoins\nDate d\'adhésion au serveur la plus ancienne sans réadhésions',
+    'Oldest server join date with rejoins\nDate d\'adhésion au serveur la plus ancienne avec réadhésions',
+    'Oldest first message sent\nPremier message envoyé le plus ancien',
+    'Overall rank from the info below\nClassement global à partir des informations ci-dessous',
+    'Total messages sent in Other channels\nTotal des messages envoyés sur les salons Autres',
+    'Total messages sent in French channels\nTotal des messages envoyés sur les salons Françaises',
+    'Total messages sent in English channels\nTotal des messages envoyés sur les salons Anglaises',
+    'Most pinged users\nUtilisateurs les plus sollicités',
+    'Average messages per day since account creation\nMessages moyens par jour depuis la création du compte',
+    'Total messages sent in all channels\nTotal des messages envoyés sur tous les salons'
+  ]
+  for (const [index, [key, value]] of Object.entries(leaderboards).entries()) {
+    await channel.send({ embeds: [new EmbedBuilder().setTitle(titles[index]).setDescription(`\`\`\`ansi\n${value}\`\`\``).setColor(randomColor())] })
+  }
 }

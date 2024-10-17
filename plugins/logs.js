@@ -2,7 +2,7 @@ const { AuditLogEvent, EmbedBuilder } = require('discord.js')
 const { diffChars } = require('diff')
 const delay = require('../helpers/delay')
 const nconf = require('nconf')
-const random = require('randomcolor')
+const randomColor = require('randomcolor')
 const requiredKeys = ['LOGS', 'CHANNEL_LOG', 'SERVER']
 const exemptChannels = ['ads', 'almanax', 'annonces', 'announcements', 'helpers', 'leaderboard', 'madhouse', 'regles-info', 'rules-info', 'server']
 
@@ -11,7 +11,7 @@ module.exports = async (client) => {
   const isExempt = (channel) => exemptChannels.includes(channel.name)
   const fetchLogChannel = async (guild) => guild.channels.fetch(nconf.get('CHANNEL_LOG'))
   const logMessage = (channel, embed) => channel.send({ embeds: [embed] })
-  const generateEmbed = (message, description, timestamp, color = random()) => new EmbedBuilder()
+  const generateEmbed = (message, description, timestamp, color = randomColor()) => new EmbedBuilder()
     .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
     .setDescription(description).setFooter({ text: `#${message.channel.name}` }).setTimestamp(timestamp).setColor(color)
 

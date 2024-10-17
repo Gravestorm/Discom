@@ -1,40 +1,35 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
 const { Hercai } = require('hercai')
-const herc = new Hercai()
+const hercai = new Hercai()
+const choices = [
+  ['Gemma2', 'gemma2-9b'],
+  ['Llama3', 'llama3-70b'],
+  ['Mixtral', 'mixtral-8x7b'],
+  ['GPT4 (Default)', 'v3-32k'],
+].map(([name, value]) => ({ name, value }))
 
 module.exports = {
   data: new SlashCommandBuilder().setName('chat').setDescription('Have a chat with the bot')
-  .addStringOption(option => option.setName('text').setDescription('Talk to the bot').setRequired(true))
-  .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(
-    { name: 'Google Gemini-Pro', value: 'gemini' },
-    { name: 'GPT-4 Turbo-16k', value: 'turbo-16k' },
-    { name: 'GPT-4 Turbo', value: 'turbo' },
-    { name: 'GPT-4-32k', value: 'v3-32k' },
-    { name: 'GPT-4 (default)', value: 'v3' },
-  )),
+  .addStringOption(option => option.setName('prompt').setDescription('Talk to the bot').setRequired(true))
+  .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(...choices)),
   async execute(interaction) {
     await interaction.deferReply()
-    const response = await herc.question({ model: interaction.options.getString('version') ? interaction.options.getString('version') : 'v3', content: interaction.options.getString('text') }).catch(err => interaction.editReply(err.toString()))
-    const replyText = `*${interaction.options.getString('text')}*\n\n${response.reply}`
-    if (replyText.length >= 1999) {
-      const chunks = []
-      let currentChunk = ''
-      for (const word of replyText.split(' ')) {
-        if (currentChunk.length + word.length <= 1999) {
-          currentChunk += word + ' '
-        } else {
-          chunks.push(currentChunk)
-          currentChunk = word + ' '
+    const model = interaction.options.getString('version') || 'v3-32k'
+    const prompt = interaction.options.getString('prompt')
+    try {
+      const { reply } = await hercai.question({ model, prompt })
+      const replyText = `*${prompt}*\n\n${reply}`
+      if (replyText.length < 1999) {
+        await interaction.editReply(replyText)
+      } else {
+        const chunks = replyText.match(new RegExp(`.{1,${1999}}`, 'g')) || []
+        await interaction.editReply(chunks.shift())
+        for (const chunk of chunks) {
+          await interaction.followUp(chunk)
         }
       }
-      if (currentChunk.trim() !== '') {
-        chunks.push(currentChunk.trim())
-      }
-      for (const chunk of chunks) {
-        await interaction.followUp(chunk)
-      }
-    } else {
-      await interaction.editReply(replyText)
+    } catch (err) {
+      await interaction.editReply(err.toString())
     }
   }
 }

@@ -11,38 +11,24 @@ module.exports = {
     .addBooleanOption(option => option.setName('unwarn').setDescription('Remove a warning from the user')),
   async execute(interaction) {
     if (!requiredKeys.every(key => nconf.get(key))) return
-    const warn1  = nconf.get('ROLE_WARN1')
-    const warn2 = nconf.get('ROLE_WARN2')
-    const warn3 = nconf.get('ROLE_WARN3')
-    const user = interaction.options.getMember('user')
-    const logChannel = await interaction.guild.channels.fetch(nconf.get('CHANNEL_LOG'))
-
-    if (interaction.options.getBoolean('unwarn') === true) {
-      switch (true) {
-        case user.roles.cache.has(warn1):
-          user.roles.remove(warn1); break
-        case user.roles.cache.has(warn2):
-          user.roles.remove(warn2); user.roles.add(warn1); break
-        case user.roles.cache.has(warn3):
-          user.roles.remove(warn3); user.roles.add(warn2); break
-        default:
-          break
-      }
-    await logChannel.send(`${user} has been unwarned by ${interaction.member} on ${date()} for ${interaction.options.getString('reason')}`)
-    await interaction.reply({ content: 'User unwarned successfully', ephemeral: true })
-    } else {
-      switch (true) {
-        case user.roles.cache.has(warn1):
-          user.roles.remove(warn1); user.roles.add(warn2); break
-        case user.roles.cache.has(warn2):
-          user.roles.remove(warn2); user.roles.add(warn3); break
-        case user.roles.cache.has(warn3):
-          break
-        default:
-          user.roles.add(warn1); break
-      }
-      await logChannel.send(`${user} has been warned by ${interaction.member} on ${date()} for ${interaction.options.getString('reason')}`)
-      interaction.options.getBoolean('silent') === true ? await interaction.reply({ content: 'User warned successfully', ephemeral: true }) : await interaction.reply({ content: `${user} :warning: <#678610533699813407> <#678708610762670101>` })
+    const { guild, member: moderator, options } = interaction
+    const user = options.getMember('user')
+    const reason = options.getString('reason')
+    const isUnwarn = options.getBoolean('unwarn')
+    const isSilent = options.getBoolean('silent')
+    const warnRoles = requiredKeys.slice(1).map(key => nconf.get(key))
+    const logChannel = await guild.channels.fetch(nconf.get('CHANNEL_LOG'))
+    const getCurrentWarnLevel = () => warnRoles.findIndex(role => user.roles.cache.has(role))
+    const updateWarnRole = async (currentLevel, isUnwarn) => {
+      const newLevel = isUnwarn ? Math.max(currentLevel - 1, -1) : Math.min(currentLevel + 1, 2)
+      if (currentLevel !== -1) await user.roles.remove(warnRoles[currentLevel])
+      if (newLevel !== -1) await user.roles.add(warnRoles[newLevel])
     }
+    const currentLevel = getCurrentWarnLevel()
+    await updateWarnRole(currentLevel, isUnwarn)
+    const action = isUnwarn ? 'unwarned' : 'warned'
+    await logChannel.send(`${user} has been ${action} by ${moderator} on ${date()} for ${reason}`)
+    const replyContent = isUnwarn ? 'User unwarned successfully' : isSilent ? 'User warned successfully' : `${user} :warning: <#678610533699813407> <#678708610762670101>`
+    await interaction.reply({ content: replyContent, ephemeral: isSilent || isUnwarn })
   }
 }

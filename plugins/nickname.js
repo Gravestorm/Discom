@@ -1,23 +1,24 @@
 const nconf = require('nconf')
-const prefix = ['!', '"', '#', '$', '%', '&', '\'']
-const prefixParenthesis = [')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '|', '~', 'a', 'b', 'c']
+const prefix = new Set(['!', '"', '#', '$', '%', '&', '\'', '('])
+const prefixParenthesis = new Set([')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '|', '~', 'a', 'b', 'c'])
 const requiredKeys = ['NICKNAME', 'SERVER']
 
 module.exports = (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
-  client.on('guildMemberUpdate', (oldMember, newMember) => {
-    if (oldMember.displayName === newMember.displayName) return
-    let newDisplayName = newMember.displayName
-    while (prefix.some(char => newDisplayName.toLowerCase().startsWith(char))) {
-      const matchingChar = prefix.find(char => newDisplayName.toLowerCase().startsWith(char))
-      newDisplayName = newDisplayName.substring(matchingChar.length)
+  const cleanDisplayName = (member) => {
+    let displayName = member.displayName
+    let startIndex = 0
+    while (startIndex < displayName.length && prefix.has(displayName[startIndex])) startIndex++
+    if (displayName[startIndex] === '(') {
+      if (displayName.toLowerCase().startsWith('(boune', startIndex)) return
+      let endIndex = startIndex + 1
+      while (endIndex < displayName.length && prefixParenthesis.has(displayName[endIndex])) endIndex++
+      if (endIndex > startIndex + 1) startIndex = endIndex - 1
     }
-    if (newDisplayName.startsWith('(')) {
-      let endIndex = 1
-      while (prefixParenthesis.includes(newDisplayName[endIndex])) endIndex++
-      if (endIndex > 1) newDisplayName = '(' + newDisplayName.substring(endIndex)
-    }
-    if (newDisplayName.trim() === '') newDisplayName = newMember.user.username
-    if (newDisplayName !== newMember.displayName) newMember.setNickname(newDisplayName).catch(console.error)
-  })
+    const cleanedName = member.displayName.slice(startIndex).trim() || member.user.username
+    if (cleanedName !== member.displayName) member.setNickname(cleanedName).catch(err => console.error(`Error cleaning nickname of ${member}:`, err))
+  }
+  const handleMemberUpdate = (member) => cleanDisplayName(member)
+  client.on('guildMemberUpdate', (_, newMember) => handleMemberUpdate(newMember))
+  client.on('guildMemberAdd', handleMemberUpdate)
 }

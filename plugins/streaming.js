@@ -1,16 +1,23 @@
 const nconf = require('nconf')
-const requiredKeys = ['STREAMING', 'ROLE_STREAMING', 'SERVER']
+const requiredKeys = ['STREAMING', 'ROLE_STREAMER', 'ROLE_STREAMING', 'SERVER']
 
 module.exports = (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
-  setInterval(() => {
-    client.guilds.fetch(nconf.get('SERVER')).then(g => g.members.fetch().then(() => {
-      g.roles.cache.get(nconf.get('ROLE_STREAMER')).members.map(m => {
-        let stream
-        m.presence?.activities.forEach(a => { if (a.type === 1) stream = true })
-        if (m.roles.resolve(nconf.get('ROLE_STREAMING')) === null && stream === true) m.roles.add(g.roles.resolve(nconf.get('ROLE_STREAMING')))
-        if (m.roles.resolve(nconf.get('ROLE_STREAMING')) !== null && stream !== true) m.roles.remove(g.roles.resolve(nconf.get('ROLE_STREAMING')))
+  const updateStreamingRoles = async () => {
+    try {
+      const guild = await client.guilds.fetch(nconf.get('SERVER'))
+      await guild.members.fetch()
+      const streamingRole = guild.roles.cache.get(nconf.get('ROLE_STREAMING'))
+      const streamerRole = guild.roles.cache.get(nconf.get('ROLE_STREAMER'))
+      streamerRole.members.forEach(member => {
+        const isStreaming = member.presence?.activities.some(activity => activity.type === 1)
+        const hasStreamingRole = member.roles.cache.has(streamingRole.id)
+        if (isStreaming && !hasStreamingRole) member.roles.add(streamingRole)
+        if (!isStreaming && hasStreamingRole) member.roles.remove(streamingRole)
       })
-    }))
-  }, 120000) // 120000 = 2 minutes
+    } catch (err) {
+      console.error('Error updating streaming roles:', err)
+    }
+  }
+  setInterval(updateStreamingRoles, 120000) // 2 minutes
 }
