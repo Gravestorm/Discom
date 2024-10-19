@@ -1,6 +1,6 @@
 const nconf = require('nconf')
 const prefix = new Set(['!', '"', '#', '$', '%', '&', '\'', '('])
-const prefixParenthesis = new Set([')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '|', '~', 'a', 'b', 'c'])
+const prefixParenthesis = new Set([')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '|', '~', 'a', 'b'])
 const requiredKeys = ['NICKNAME', 'SERVER']
 
 module.exports = (client) => {

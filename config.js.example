@@ -8,13 +8,15 @@ module.exports = {
   CLIENT: '',
 
   // Server ID.
-  // Used for the fetch/nickname/nitro/streaming plugins and for logging deleted messages/banned users in index.js.
+  // Used for the fetch/leaderboard/logs/nickname/nitro/publish/streaming/youtube plugins.
   // Required for adding commands to the server with commands.js.
   SERVER: '',
 
-  // User token.
+  // User tokens.
   // Used for the info command and the fetch/leaderboard plugins.
-  USER: '',
+  USER1: '',
+  USER2: '',
+  USER3: '',
 
   // Database URL.
   // Used for the info command and the fetch/leaderboard plugins.
@@ -38,7 +40,7 @@ module.exports = {
   CHANNEL_BOT: '',
   // Used for the leaderboard plugin.
   CHANNEL_LEADERBOARD: '',
-  // Used for the warn command and logging deleted messages/banned users in index.js.
+  // Used for the warn command and the logs plugin.
   CHANNEL_LOG: '',
 
   // Nitro Booster/Streamer/Streaming/Leaderboard role IDs.
