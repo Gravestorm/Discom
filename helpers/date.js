@@ -3,5 +3,5 @@ module.exports = (d, x) => new Date(d || Date.now()).toLocaleString('LT', {
   year: 'numeric',
   month: '2-digit',
   day: '2-digit',
-  ...(x && { hour: 'numeric', minute: 'numeric', second: 'numeric' })
+  ...(x && { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 })
