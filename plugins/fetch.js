@@ -112,8 +112,9 @@ async function fetchMember(member, refetch, data, token) {
   let frmsg = refetch ? data.fr_msg : 0
   let othermsg = refetch ? data.other_msg : 0
   let pings = refetch ? data.pings : 0
-  let msgperday = refetch ? data.msg_per_day : 0
-  console.log('Fetching member:', member.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperday, Date.parse(date(created, true)), Date.parse(date(joined, true)), Date.parse(date(rejoined, true)), firstmsg !== null ? Date.parse(date(firstmsg, true)) : null, refetch ? data.updated : refetch)
+  let msgperdaycreated = refetch ? data.msg_per_day_created : 0
+  let msgperdayjoined = refetch ? data.msg_per_day_joined : 0
+  console.log('Fetching member:', member.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperdaycreated, msgperdayjoined, Date.parse(date(created, true)), Date.parse(date(joined, true)), Date.parse(date(rejoined, true)), firstmsg !== null ? Date.parse(date(firstmsg, true)) : null, refetch ? data.updated : refetch)
   if (!refetch) {
     const resDate = await fetchWithRetries(`${baseUrl}?author_id=${member.id}&channel_id=373576614505611282&include_nsfw=true&sort_by=timestamp&sort_order=asc&offset=0`, token)
     const dateResult = JSON.parse(resDate)
@@ -123,7 +124,7 @@ async function fetchMember(member, refetch, data, token) {
   const messagesResult = JSON.parse(resMessages)
   if (messagesResult.total_results === 0) {
     firstmsg = null
-    totalmsg = enmsg = frmsg = othermsg = pings = msgperday = 0
+    totalmsg = enmsg = frmsg = othermsg = pings = msgperdaycreated = msgperdayjoined = 0
   } else {
     firstmsg = messagesResult.messages[0][0].timestamp
     if (!refetch && date(firstmsg, true) < date(joined, true)) joined = firstmsg
@@ -136,9 +137,10 @@ async function fetchMember(member, refetch, data, token) {
     frmsg = newData.frmsg
     othermsg = newData.othermsg
   }
-  msgperday = Number(totalmsg / ((Date.parse(date()) - Date.parse(date(joined))) / 86400000)).toFixed(3)
-  console.log('Fetched member: ', member.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperday, Date.parse(date(created, true)), Date.parse(date(joined, true)), Date.parse(date(rejoined, true)), firstmsg !== null ? Date.parse(date(firstmsg, true)) : null, refetch)
-  return {name, created: Date.parse(date(created, true)), joined: Date.parse(date(joined, true)), rejoined: Date.parse(date(rejoined, true)), firstmsg: firstmsg !== null ? Date.parse(date(firstmsg, true)) : null, totalmsg, enmsg, frmsg, othermsg, pings, msgperday}
+  msgperdaycreated = Number(totalmsg / ((Date.parse(date()) - Date.parse(date(created))) / 86400000)).toFixed(3)
+  msgperdayjoined = Number(totalmsg / ((Date.parse(date()) - Date.parse(date(joined))) / 86400000)).toFixed(3)
+  console.log('Fetched member: ', member.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperdaycreated, msgperdayjoined, Date.parse(date(created, true)), Date.parse(date(joined, true)), Date.parse(date(rejoined, true)), firstmsg !== null ? Date.parse(date(firstmsg, true)) : null, refetch)
+  return {name, created: Date.parse(date(created, true)), joined: Date.parse(date(joined, true)), rejoined: Date.parse(date(rejoined, true)), firstmsg: firstmsg !== null ? Date.parse(date(firstmsg, true)) : null, totalmsg, enmsg, frmsg, othermsg, pings, msgperdaycreated, msgperdayjoined}
 }
 
 async function addNewMembers(guild) {
@@ -149,7 +151,7 @@ async function addNewMembers(guild) {
       const daysSinceJoined = (Date.parse(date()) - Date.parse(date(member.joinedTimestamp))) / (1000 * 60 * 60 * 24)
       if (result.rows.length !== 0 || member.id === '78600305175961600' || daysSinceJoined < 7) continue
       const data = await fetchMember(member, false, undefined, nconf.get('USER1'))
-      await pool.query('INSERT INTO members (id, name, created, joined, rejoined, first_msg, updated, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [member.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg !== null ? data.firstmsg : null, date(), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperday])
+      await pool.query('INSERT INTO members (id, name, created, joined, rejoined, first_msg, updated, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day_created, msg_per_day_joined) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', [member.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg !== null ? data.firstmsg : null, date(), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperdaycreated, data.msgperdayjoined])
       await assignRoles(member, data.totalmsg, data.firstmsg, Math.floor((new Date(data.created).getFullYear() + new Date(data.joined).getFullYear() + new Date(data.rejoined).getFullYear() + (data.firstmsg !== null ? new Date(data.firstmsg).getFullYear() : new Date().getFullYear())) / 4))
     } catch (err) {
       console.error('Error occurred while adding members:', err)
@@ -178,8 +180,8 @@ async function updateMember(member, token) {
   if (query.rows.length === 0) return
   const result = query.rows[0]
   const data = await fetchMember(member, true, result, token)
-  await pool.query('UPDATE members SET name = $2, created = $3, joined = $4, rejoined = $5, first_msg = $6, updated = $7, total_msg = $8, en_msg = $9, fr_msg = $10, other_msg = $11, pings = $12, msg_per_day = $13 WHERE id = $1',
-    [member.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg, date(), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperday])
+  await pool.query('UPDATE members SET name = $2, created = $3, joined = $4, rejoined = $5, first_msg = $6, updated = $7, total_msg = $8, en_msg = $9, fr_msg = $10, other_msg = $11, pings = $12, msg_per_day_created = $13, msg_per_day_joined = $14 WHERE id = $1',
+    [member.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg, date(), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperdaycreated, data.msgperdayjoined])
   await assignRoles(member, data.totalmsg, data.firstmsg, Math.floor((new Date(data.created).getFullYear() + new Date(data.joined).getFullYear() + new Date(data.rejoined).getFullYear() + (data.firstmsg !== null ? new Date(data.firstmsg).getFullYear() : new Date().getFullYear())) / 4))
 }
 
@@ -198,7 +200,7 @@ module.exports = async (client) => {
     const guild = await client.guilds.fetch(nconf.get('SERVER'))
     await guild.members.fetch({ force: true })
     await pool.connect()
-    await pool.query(`CREATE TABLE IF NOT EXISTS members (id VARCHAR(50) PRIMARY KEY, name VARCHAR(255), created BIGINT, joined BIGINT, rejoined BIGINT, first_msg BIGINT, updated TIMESTAMP, total_msg INTEGER, en_msg INTEGER, fr_msg INTEGER, other_msg INTEGER, pings INTEGER, msg_per_day DECIMAL);`)
+    await pool.query(`CREATE TABLE IF NOT EXISTS members (id VARCHAR(50) PRIMARY KEY, name VARCHAR(255), created BIGINT, joined BIGINT, rejoined BIGINT, first_msg BIGINT, updated TIMESTAMP, total_msg INTEGER, en_msg INTEGER, fr_msg INTEGER, other_msg INTEGER, pings INTEGER, msg_per_day_created DECIMAL, msg_per_day_joined DECIMAL);`)
     await addNewMembers(guild)
     await removeOldMembers(guild)
     const { rows: inactiveMembers } = await pool.query('SELECT * FROM members WHERE total_msg = 0 ORDER BY updated ASC')
