@@ -95,11 +95,10 @@ module.exports = async (client) => {
   const messages = await channel.messages.fetch({ limit: 12, cache: false })
   await messages.forEach(message => message.delete())
   for (const [key, channelIds] of Object.entries(channels)) {
-    await delay(6000)
     const res = await fetch(`${baseUrl}?${channelIds.map(id => `channel_id=${id}`).join('&')}&include_nsfw=true`, nconf.get('USER1'))
     stats.server[`${key}_msg`] = JSON.parse(res).total_results
+    await delay(6000)
   }
-  await delay(6000)
   const res = await fetch(`${baseUrl}?${allChannels.map(id => `channel_id=${id}`).join('&')}&include_nsfw=true`, nconf.get('USER1'))
   stats.server.total_msg = JSON.parse(res).total_results
   const summaryMessage = `

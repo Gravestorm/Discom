@@ -4,14 +4,6 @@ const nconf = require('nconf')
 const randomColor = require('randomcolor')
 const requiredKeys = ['CHANNEL_LOG']
 
-const createEmbed = (message) => new EmbedBuilder()
-  .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-  .setDescription(message.content || ' ')
-  .setImage(message.attachments.first()?.proxyURL || null)
-  .setFooter({ text: `#${message.channel.name}` })
-  .setTimestamp(message.createdTimestamp)
-  .setColor(randomColor())
-
 module.exports = {
   data: new SlashCommandBuilder().setName('delete').setDescription('Delete a number of messages in this channel, optionally from a user and/or move them to a channel')
     .addNumberOption(option => option.setName('number').setDescription('Number of messages').setRequired(true))
@@ -25,7 +17,7 @@ module.exports = {
     const deleteAndMove = async (messages) => {
       for (const message of messages) {
         await message.delete()
-        if (targetChannel) await targetChannel.send({ embeds: [createEmbed(message)] })
+        if (targetChannel) await targetChannel.send({ embeds: [new EmbedBuilder().setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() }).setDescription(message.content || ' ').setImage(message.attachments.first()?.proxyURL || null).setFooter({ text: `#${message.channel.name}` }).setTimestamp(message.createdTimestamp).setColor(randomColor())] })
       }
     }
     let messages

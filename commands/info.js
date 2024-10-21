@@ -81,12 +81,12 @@ function drawBoxContent(ctx, box, userStats, members, index) {
 function getMessageData(userStats, members) {
   const getRank = (field) => members.findIndex(m => m[field] === userStats[field]) + 1
   return [
-    `Rank: #${((getRank('total_msg') + getRank('en_msg') + getRank('fr_msg') + getRank('other_msg') + getRank('msg_per_day') + getRank('pings')) / 6).toFixed(2)}`,
+    `Rank: #${((getRank('total_msg') + getRank('en_msg') + getRank('fr_msg') + getRank('other_msg') + getRank('msg_per_day_joined') + getRank('pings')) / 6).toFixed(2)}`,
     `All: ${userStats.total_msg} (#${getRank('total_msg')})`,
     `EN: ${userStats.en_msg} (#${getRank('en_msg')})`,
     `FR: ${userStats.fr_msg} (#${getRank('fr_msg')})`,
     `Other: ${userStats.other_msg} (#${getRank('other_msg')})`,
-    `Daily: ${userStats.msg_per_day.toFixed(2)} (#${getRank('msg_per_day')})`,
+    `Daily: ${userStats.msg_per_day_joined.toFixed(2)} (#${getRank('msg_per_day_joined')})`,
     `Pings: ${userStats.pings} (#${getRank('pings')})`
   ]
 }

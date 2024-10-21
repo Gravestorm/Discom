@@ -18,7 +18,7 @@ module.exports = (client) => {
     }
     if (cleanedName !== displayName) member.setNickname(cleanedName.trim() || member.user.username).catch(err => console.error(`Error cleaning nickname of ${member}:`, err))
   }
-  const handleMemberUpdate = member => cleanDisplayName(member)
+  const handleMemberUpdate = member => { if (member.guild.id === nconf.get('SERVER')) cleanDisplayName(member) }
   client.on('guildMemberUpdate', (_, newMember) => handleMemberUpdate(newMember))
   client.on('guildMemberAdd', handleMemberUpdate)
 }

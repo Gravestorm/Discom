@@ -46,7 +46,7 @@ module.exports = async (client) => {
   })
 
   client.on('messageUpdate', async (oldMessage, newMessage) => {
-    if (newMessage.author.bot || oldMessage.content === newMessage.content || isExempt(newMessage.channel)) return
+    if (oldMessage.content === newMessage.content || newMessage.author.bot || isExempt(newMessage.channel) || newMessage.guild.id !== nconf.get('SERVER')) return
     const logChannel = await fetchLogChannel(newMessage.guild)
     if (!logChannel) return
     const formattedChanges = diffWords(oldMessage.content, newMessage.content).map(part => {

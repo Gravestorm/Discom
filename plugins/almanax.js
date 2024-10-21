@@ -2,7 +2,7 @@ const { EmbedBuilder } = require('discord.js')
 const fs = require('node:fs')
 const nconf = require('nconf')
 const randomColor = require('randomcolor')
-const almanax = JSON.parse(fs.readFileSync('AlmanaxYears.json'))
+const date = require('../helpers/date')
 const requiredKeys = ['ALMANAX', 'CHANNEL_ALMANAX']
 
 module.exports = async (client) => {
@@ -12,16 +12,13 @@ module.exports = async (client) => {
       const channel = await client.channels.fetch(nconf.get('CHANNEL_ALMANAX'))
       const messages = await channel.messages.fetch({ limit: 1 })
       const lastMessage = messages.first()
-      const currentDate = new Date().toLocaleString('LT', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })
+      const currentDate = date()
       if (lastMessage?.embeds[0]?.data.title.substring(2, 12) === currentDate) return
-      const almanaxEntry = almanax.find(d => d.D.includes(currentDate))
+      const almanax = JSON.parse(fs.readFileSync('AlmanaxYears.json'))
+      const almanaxEntry = almanax.find(data => data.D.includes(currentDate))
       if (!almanaxEntry) return
       if (lastMessage) await lastMessage.delete()
-      const embed = new EmbedBuilder()
-        .setTitle(`**${currentDate} | ${almanaxEntry.N} | ${almanaxEntry.R}**`)
-        .setDescription(`**Objet:** ${almanaxEntry.IFR}\n${almanaxEntry.BFR}\n\n\n**Item:** ${almanaxEntry.IEN}\n${almanaxEntry.BEN}`)
-        .setImage(almanaxEntry.I)
-        .setColor(randomColor())
+      const embed = new EmbedBuilder().setTitle(`**${currentDate} | ${almanaxEntry.N} | ${almanaxEntry.R}**`).setDescription(`**Objet:** ${almanaxEntry.IFR}\n${almanaxEntry.BFR}\n\n\n**Item:** ${almanaxEntry.IEN}\n${almanaxEntry.BEN}`).setImage(almanaxEntry.I).setColor(randomColor())
       const newMessage = await channel.send({ embeds: [embed] })
       await newMessage.crosspost()
     } catch (err) {
