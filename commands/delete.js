@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
-const { EmbedBuilder } = require('discord.js')
+const { EmbedBuilder, Collection } = require('discord.js')
 const nconf = require('nconf')
 const randomColor = require('randomcolor')
 const requiredKeys = ['CHANNEL_LOG']
@@ -14,18 +14,42 @@ module.exports = {
     const num = Math.min(interaction.options.getNumber('number'), 100)
     const user = interaction.options.getMember('user')
     const targetChannel = interaction.options.getChannel('channel')
-    const deleteAndMove = async (messages) => {
-      for (const message of messages) {
-        await message.delete()
-        if (targetChannel) await targetChannel.send({ embeds: [new EmbedBuilder().setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() }).setDescription(message.content || ' ').setImage(message.attachments.first()?.proxyURL || null).setFooter({ text: `#${message.channel.name}` }).setTimestamp(message.createdTimestamp).setColor(randomColor())] })
+    const messages = await interaction.channel.messages.fetch({ limit: user ? 100 : num })
+    let filteredMessages
+    if (user) {
+      const filtered = messages.filter(message => message.author.id === user.id)
+      filteredMessages = new Collection()
+      let count = 0
+      for (const [id, message] of filtered) {
+        if (count >= num) break
+        filteredMessages.set(id, message)
+        count++
       }
+    } else {
+      filteredMessages = messages
     }
-    let messages
-    if (user) messages = (await interaction.channel.messages.fetch({ limit: 100 })).filter(message => message.author.id === user.id).first(num)
-    else messages = await interaction.channel.bulkDelete(num)
-    if (messages.size > 0) {
-      if (user || targetChannel) await deleteAndMove([...messages.values()].reverse())
-      await interaction.reply({ content: 'Messages deleted successfully.', ephemeral: true })
+    if (filteredMessages.size > 0) {
+      try {
+        if (targetChannel) {
+          const embeds = [...filteredMessages.values()].reverse().map(message =>
+            new EmbedBuilder()
+              .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+              .setDescription(message.content || ' ')
+              .setImage(message.attachments.first()?.proxyURL || null)
+              .setFooter({ text: `#${message.channel.name}` })
+              .setTimestamp(message.createdTimestamp)
+              .setColor(randomColor())
+          )
+          const embedChunks = []
+          for (let i = 0; i < embeds.length; i += 10) embedChunks.push(embeds.slice(i, i + 10))
+          await Promise.all(embedChunks.map(chunk => targetChannel.send({ embeds: chunk })))
+        }
+        await interaction.channel.bulkDelete(filteredMessages)
+        await interaction.reply({ content: `Successfully deleted ${filteredMessages.size} messages.`, ephemeral: true })
+      } catch (err) {
+        console.error('Error during deletion:', err)
+        await interaction.reply({ content: 'An error occurred while deleting messages.', ephemeral: true })
+      }
     } else {
       await interaction.reply({ content: 'No messages found to delete.', ephemeral: true })
     }

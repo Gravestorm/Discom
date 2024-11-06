@@ -34,9 +34,7 @@ async function processAttachment(attachment, message, mainEmbed) {
     if (!response.ok) console.error(`Failed to fetch attachment: ${response.status} ${response.statusText}`)
     const buffer = await response.arrayBuffer()
     if (!buffer || buffer.byteLength === 0) console.error('Received empty buffer for attachment')
-    const attachmentFile = new AttachmentBuilder(Buffer.from(buffer), {
-      name: attachment.name, description: `Deleted file from ${message.author.tag}`
-    })
+    const attachmentFile = new AttachmentBuilder(Buffer.from(buffer), { name: attachment.name, description: `Deleted file from ${message.author.tag}` })
     const embed = new EmbedBuilder()
       .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
       .setDescription(`**Name:** ${attachment.name}\n**Size:** ${formatFileSize(attachment.size)}\n**Type:** ${attachment.contentType || 'Unknown'}`)
@@ -67,12 +65,30 @@ module.exports = async (client) => {
     const mainEmbed = generateEmbed(message, message.content || ' ', message.createdTimestamp)
     if (message.content) await logChannel.send({ embeds: [mainEmbed] })
     if (message.attachments.size > 0) {
-      const processedAttachments = await Promise.all(Array.from(message.attachments.values()).map(attachment => processAttachment(attachment, message, mainEmbed)))
-      for (const attachment of processedAttachments) {
+      const attachments = await Promise.all(Array.from(message.attachments.values()).map(attachment => processAttachment(attachment, message, mainEmbed)))
+      for (const attachment of attachments) {
         if (attachment.file) await logChannel.send({ files: [attachment.file], embeds: [attachment.embed] })
         else await logChannel.send({ embeds: [attachment.embed] })
       }
     }
+  })
+
+  client.on('messageDeleteBulk', async (messages) => {
+    const firstMessage = messages.first()
+    if (firstMessage.guildId !== nconf.get('SERVER') || isExempt(firstMessage.channel)) return
+    const logChannel = await fetchLogChannel(firstMessage.guild)
+    if (!logChannel) return
+    messages.reverse().forEach(async (message) => {
+      const mainEmbed = generateEmbed(message, message.content || ' ', message.createdTimestamp)
+      if (message.content) await logChannel.send({ embeds: [mainEmbed] })
+      if (message.attachments.size > 0) {
+        const attachments = await Promise.all(Array.from(message.attachments.values()).map(attachment => processAttachment(attachment, message, mainEmbed)))
+        for (const attachment of attachments) {
+          if (attachment.file) await logChannel.send({ files: [attachment.file], embeds: [attachment.embed] })
+          else await logChannel.send({ embeds: [attachment.embed] })
+        }
+      }
+    })
   })
 
   client.on('guildBanAdd', async (ban) => {
