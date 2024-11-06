@@ -4,7 +4,7 @@ const pool = new Pool({ connectionString: nconf.get('DATABASE_URL'), max: 20 })
 const date = require('../helpers/date')
 const delay = require('../helpers/delay')
 const fetch = require('../helpers/fetch')
-const requiredKeys = ['FETCH', 'DATABASE_URL', 'SERVER', 'ROLE_IRON', 'ROLE_COPPER', 'ROLE_BRONZE', 'ROLE_SILVER', 'ROLE_GOLD', 'ROLE_CRYSTAL', 'ROLE_DIAMOND', 'ROLE_LEGEND', 'ROLE_EPIC', 'ROLE_OMEGA', 'ROLE_ACHIEVEMENT', 'ROLE_YEAR15', 'ROLE_YEAR16', 'ROLE_YEAR17', 'ROLE_YEAR18', 'ROLE_YEAR19', 'ROLE_YEAR20', 'ROLE_YEAR21', 'ROLE_YEAR22', 'ROLE_YEAR23', 'ROLE_YEAR24']
+const requiredKeys = ['FETCH', 'DATABASE_URL', 'SERVER', 'ROLE_GLOOT', 'ROLE_TOFU', 'ROLE_BOUF', 'ROLE_BRONZE', 'ROLE_SILVER', 'ROLE_GOLD', 'ROLE_CRYSTAL', 'ROLE_DIAMOND', 'ROLE_LEGEND', 'ROLE_EPIC', 'ROLE_OMEGA', 'ROLE_DOFUS', 'ROLE_ACHIEVEMENT', 'ROLE_YEAR15', 'ROLE_YEAR16', 'ROLE_YEAR17', 'ROLE_YEAR18', 'ROLE_YEAR19', 'ROLE_YEAR20', 'ROLE_YEAR21', 'ROLE_YEAR22', 'ROLE_YEAR23', 'ROLE_YEAR24', 'ROLE_YEAR25']
 const baseUrl = `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search`
 const frChannels = ['297779639609327617', '364086525799038976', '1270756963575271424', '626165637252907045', '372100313890553856', '534121863857569792', '1079510661471666297', '1022612394905718854']
 const enChannels = ['78581046714572800', '364081918116888576', '1270759070793597000', '626165608010088449', '297780920268750858', '534121764045717524']
@@ -31,8 +31,9 @@ async function fetchWithRetries(url, token, retries = 5) {
 
 async function assignRoles(member, totalmsg, firstmsg, roleDate) {
   const roles = {
-    iron: nconf.get('ROLE_IRON'),
-    copper: nconf.get('ROLE_COPPER'),
+    gloot: nconf.get('ROLE_GLOOT'),
+    tofu: nconf.get('ROLE_TOFU'),
+    bouf: nconf.get('ROLE_BOUF'),
     bronze: nconf.get('ROLE_BRONZE'),
     silver: nconf.get('ROLE_SILVER'),
     gold: nconf.get('ROLE_GOLD'),
@@ -41,6 +42,7 @@ async function assignRoles(member, totalmsg, firstmsg, roleDate) {
     legend: nconf.get('ROLE_LEGEND'),
     epic: nconf.get('ROLE_EPIC'),
     omega: nconf.get('ROLE_OMEGA'),
+    dofus: nconf.get('ROLE_DOFUS'),
     achievement: nconf.get('ROLE_ACHIEVEMENT'),
     year: {
       2015: nconf.get('ROLE_YEAR15'),
@@ -53,6 +55,7 @@ async function assignRoles(member, totalmsg, firstmsg, roleDate) {
       2022: nconf.get('ROLE_YEAR22'),
       2023: nconf.get('ROLE_YEAR23'),
       2024: nconf.get('ROLE_YEAR24'),
+      2025: nconf.get('ROLE_YEAR25'),
     }
   }
   const updateRoles = (removeRoles, addRole) => {
@@ -60,17 +63,19 @@ async function assignRoles(member, totalmsg, firstmsg, roleDate) {
     if (addRole && !member.roles.cache.has(addRole)) member.roles.add(addRole)
   }
   const msgThresholds = [
-    { min: 50000, add: roles.omega, remove: [roles.iron, roles.copper, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic] },
-    { min: 25000, add: roles.epic, remove: [roles.iron, roles.copper, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.omega] },
-    { min: 10000, add: roles.legend, remove: [roles.iron, roles.copper, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.epic, roles.omega] },
-    { min: 5000,  add: roles.diamond, remove: [roles.iron, roles.copper, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.legend, roles.epic, roles.omega] },
-    { min: 2500,  add: roles.crystal, remove: [roles.iron, roles.copper, roles.bronze, roles.silver, roles.gold, roles.diamond, roles.legend, roles.epic, roles.omega] },
-    { min: 1000,  add: roles.gold, remove: [roles.iron, roles.copper, roles.bronze, roles.silver, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega] },
-    { min: 500,   add: roles.silver, remove: [roles.iron, roles.copper, roles.bronze, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega] },
-    { min: 250,   add: roles.bronze, remove: [roles.iron, roles.copper, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega] },
-    { min: 100,   add: roles.copper, remove: [roles.iron, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega] },
-    { min: 50,    add: roles.iron, remove: [roles.copper, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega] },
-    { min: 0,     add: null, remove: [roles.iron, roles.copper, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega] }
+    { min: 100000, add: roles.dofus, remove: [roles.gloot, roles.tofu, roles.bouf, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega] },
+    { min: 50000,  add: roles.omega, remove: [roles.gloot, roles.tofu, roles.bouf, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.dofus] },
+    { min: 25000,  add: roles.epic, remove: [roles.gloot, roles.tofu, roles.bouf, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.omega, roles.dofus] },
+    { min: 10000,  add: roles.legend, remove: [roles.gloot, roles.tofu, roles.bouf, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.epic, roles.omega, roles.dofus] },
+    { min: 5000,   add: roles.diamond, remove: [roles.gloot, roles.tofu, roles.bouf, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.legend, roles.epic, roles.omega, roles.dofus] },
+    { min: 2500,   add: roles.crystal, remove: [roles.gloot, roles.tofu, roles.bouf, roles.bronze, roles.silver, roles.gold, roles.diamond, roles.legend, roles.epic, roles.omega, roles.dofus] },
+    { min: 1000,   add: roles.gold, remove: [roles.gloot, roles.tofu, roles.bouf, roles.bronze, roles.silver, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega, roles.dofus] },
+    { min: 500,    add: roles.silver, remove: [roles.gloot, roles.tofu, roles.bouf, roles.bronze, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega, roles.dofus] },
+    { min: 250,    add: roles.bronze, remove: [roles.gloot, roles.tofu, roles.bouf, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega, roles.dofus] },
+    { min: 100,    add: roles.bouf, remove: [roles.gloot, roles.tofu, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega, roles.dofus] },
+    { min: 50,     add: roles.tofu, remove: [roles.gloot, roles.bouf, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega, roles.dofus] },
+    { min: 25,     add: roles.gloot, remove: [roles.tofu, roles.bouf, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega, roles.dofus] },
+    { min: 0,      add: null, remove: [roles.gloot, roles.tofu, roles.bouf, roles.bronze, roles.silver, roles.gold, roles.crystal, roles.diamond, roles.legend, roles.epic, roles.omega, roles.dofus] }
   ]
   const threshold = msgThresholds.find(thresh => totalmsg >= thresh.min)
   if (threshold) updateRoles(threshold.remove, threshold.add)

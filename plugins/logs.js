@@ -93,9 +93,9 @@ module.exports = async (client) => {
 
   client.on('guildBanAdd', async (ban) => {
     if (ban.guild.id !== nconf.get('SERVER')) return
-    await delay(10000)
     const logChannel = await fetchLogChannel(ban.guild)
     if (!logChannel) return
+    await delay(10000)
     const log = await ban.guild.fetchAuditLogs({ limit: 25, type: AuditLogEvent.MemberBanAdd })
     const entry = log.entries.find(entry => ban.user.id === entry.target.id)
     const embed = new EmbedBuilder().setTitle('Banned:tm:').setDescription(`**User that got <:Ben:307581492010418176>**\n<@${entry?.target.id || ban.user.id}> - ${entry?.target.id || ban.user.id} - ${(entry?.target.username || ban.user.username).replace(/([_*\\])/g, '\\$1')}\n\n**Cleaner that did the <:Ben:307581492010418176>**\n<@${entry?.executor.id || 'Unknown'}>\n\n**Date of the <:Ben:307581492010418176>**\n${date(undefined, true)}\n\n**Reason for the <:Ben:307581492010418176>**\n${entry?.reason ? entry.reason.replace(/([_*\\])/g, '\\$1') : '¯\\_(ツ)_/¯'}`)

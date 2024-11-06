@@ -11,6 +11,7 @@ module.exports = {
     .addChannelOption(option => option.setName('channel').setDescription('Select a channel')),
   async execute(interaction) {
     if (!requiredKeys.every(key => nconf.get(key))) return
+    await interaction.deferReply({ephemeral: true})
     const num = Math.min(interaction.options.getNumber('number'), 100)
     const user = interaction.options.getMember('user')
     const targetChannel = interaction.options.getChannel('channel')
@@ -45,13 +46,13 @@ module.exports = {
           await Promise.all(embedChunks.map(chunk => targetChannel.send({ embeds: chunk })))
         }
         await interaction.channel.bulkDelete(filteredMessages)
-        await interaction.reply({ content: `Successfully deleted ${filteredMessages.size} messages.`, ephemeral: true })
+        await interaction.editReply({ content: `Successfully deleted ${filteredMessages.size} messages.`, ephemeral: true })
       } catch (err) {
         console.error('Error during deletion:', err)
-        await interaction.reply({ content: 'An error occurred while deleting messages.', ephemeral: true })
+        await interaction.editReply({ content: 'An error occurred while deleting messages.', ephemeral: true })
       }
     } else {
-      await interaction.reply({ content: 'No messages found to delete.', ephemeral: true })
+      await interaction.editReply({ content: 'No messages found to delete.', ephemeral: true })
     }
   }
 }
