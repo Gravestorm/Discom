@@ -17,6 +17,18 @@ const allChannels = [...channels.fr, ...channels.en, ...channels.ot]
 
 const format = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
+const formatTimeDifference = x => {
+  const milliseconds = Number(x)
+  const seconds = Math.floor(milliseconds / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+  if (seconds < 60) return `${seconds} second${seconds !== 1 ? 's' : ''}`
+  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}`
+  if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''}`
+  return `${days} day${days !== 1 ? 's' : ''}`
+}
+
 const generateLeaderboard = (members, valueKey, formatFunc = x => x) =>
   members.slice(0, 20).map((member, i) => {
     const value = formatFunc(member[valueKey])
@@ -34,22 +46,86 @@ const sendLeaderboardEmbed = async (channel, title, description) =>
 
 const generateAndSendLeaderboards = async (pool, channel) => {
   const leaderboards = [
-    { query: 'SELECT * FROM members ORDER BY created ASC LIMIT 20', key: 'created', title: 'Oldest account creation date\nDate de création de compte la plus ancienne', formatFunc: x => date(Number(x)) },
-    { query: 'SELECT * FROM members ORDER BY joined ASC LIMIT 20', key: 'joined', title: 'Oldest server join date without rejoins\nDate d\'adhésion au serveur la plus ancienne sans réadhésions', formatFunc: x => date(Number(x)) },
-    { query: 'SELECT * FROM members ORDER BY rejoined ASC LIMIT 20', key: 'rejoined', title: 'Oldest server join date with rejoins\nDate d\'adhésion au serveur la plus ancienne avec réadhésions', formatFunc: x => date(Number(x)) },
-    { query: 'SELECT * FROM members ORDER BY first_msg ASC LIMIT 20', key: 'first_msg', title: 'Oldest first message sent\nPremier message envoyé le plus ancien', formatFunc: x => date(Number(x)) },
-    { query: 'SELECT * FROM members ORDER BY other_msg DESC LIMIT 20', key: 'other_msg', title: 'Total messages sent in Other channels\nTotal des messages envoyés sur les salons Autres' },
-    { query: 'SELECT * FROM members ORDER BY fr_msg DESC LIMIT 20', key: 'fr_msg', title: 'Total messages sent in French channels\nTotal des messages envoyés sur les salons Françaises' },
-    { query: 'SELECT * FROM members ORDER BY en_msg DESC LIMIT 20', key: 'en_msg', title: 'Total messages sent in English channels\nTotal des messages envoyés sur les salons Anglaises' },
-    { query: 'SELECT * FROM members ORDER BY pings DESC LIMIT 20', key: 'pings', title: 'Most pinged users\nUtilisateurs les plus sollicités' },
-    { query: 'SELECT * FROM members ORDER BY msg_per_day_created DESC LIMIT 20', key: 'msg_per_day_created', title: 'Average messages per day account creation\nNombre moyen de messages par jour lors de la création d\'un compte', formatFunc: x => Number(x).toFixed(2) },
-    { query: 'SELECT * FROM members ORDER BY msg_per_day_joined DESC LIMIT 20', key: 'msg_per_day_joined', title: 'Average messages per day since server join\nNombre moyen de messages par jour depuis l\'adhésion au serveur', formatFunc: x => Number(x).toFixed(2) },
-    { query: 'SELECT * FROM members ORDER BY total_msg DESC LIMIT 20', key: 'total_msg', title: 'Total messages sent in all channels\nTotal des messages envoyés sur tous les salons' },
+    {
+      query: 'SELECT * FROM members ORDER BY created ASC LIMIT 20',
+      key: 'created',
+      title: 'Oldest account creation date\nDate de création de compte la plus ancienne',
+      formatFunc: x => date(Number(x))
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY joined ASC LIMIT 20',
+      key: 'joined',
+      title: 'Oldest server join date with people who rejoined later\nDate de première arrivée la plus ancienne avec les personnes ayant rejoint de nouveau',
+      formatFunc: x => date(Number(x))
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY rejoined ASC LIMIT 20',
+      key: 'rejoined',
+      title: 'Oldest server join date without people who rejoined later\nDate de première arrivée la plus ancienne sans les personnes ayant rejoint de nouveau',
+      formatFunc: x => date(Number(x))
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY first_msg ASC LIMIT 20',
+      key: 'first_msg',
+      title: 'Oldest first message sent\nPremier message envoyé le plus ancien',
+      formatFunc: x => date(Number(x))
+    },
+    { 
+      query: `SELECT *, (first_msg - rejoined) as quickest_msg_time FROM members WHERE first_msg > rejoined ORDER BY quickest_msg_time ASC LIMIT 20`, 
+      key: 'quickest_msg_time', 
+      title: 'Quickest first message sent after joining the server\nPremier message le plus rapide envoyé après avoir rejoint le serveur',
+      formatFunc: formatTimeDifference
+    },
+    { 
+      query: `SELECT *, (first_msg - rejoined) as slowest_msg_time FROM members WHERE first_msg > rejoined ORDER BY slowest_msg_time DESC LIMIT 20`, 
+      key: 'slowest_msg_time', 
+      title: 'Slowest first message sent after joining the server\nPremier message le plus lent envoyé après avoir rejoint le serveur',
+      formatFunc: formatTimeDifference
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY other_msg DESC LIMIT 20',
+      key: 'other_msg',
+      title: 'Total messages sent in Other channels\nNombre total de messages envoyés dans les salons Autres'
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY fr_msg DESC LIMIT 20',
+      key: 'fr_msg',
+      title: 'Total messages sent in French channels\nNombre total de messages envoyés dans les salons Français'
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY en_msg DESC LIMIT 20',
+      key: 'en_msg',
+      title: 'Total messages sent in English channels\nNombre total de messages envoyés dans les salons Anglais'
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY pings DESC LIMIT 20',
+      key: 'pings',
+      title: 'Most pinged people\nPersonnes les plus mentionnées'
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY msg_per_day_created DESC LIMIT 20',
+      key: 'msg_per_day_created',
+      title: 'Average messages per day since account creation\nMoyenne de messages par jour depuis la création du compte',
+      formatFunc: x => Number(x).toFixed(2)
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY msg_per_day_joined DESC LIMIT 20',
+      key: 'msg_per_day_joined',
+      title: 'Average messages per day since joining the server\nMoyenne de messages par jour depuis l’arrivée sur le serveur',
+      formatFunc: x => Number(x).toFixed(2)
+    },
+    {
+      query: 'SELECT * FROM members ORDER BY total_msg DESC LIMIT 20',
+      key: 'total_msg',
+      title: 'Total messages sent in all channels\nNombre total de messages envoyés dans tous les salons'
+    },
   ]
+
   const generatedLeaderboards = await Promise.all(leaderboards.map(async ({ query, key, title, formatFunc }) => {
     const { rows } = await pool.query(query)
     return { title, description: generateLeaderboard(rows, key, formatFunc) }
   }))
+
   await Promise.all(generatedLeaderboards.map(({ title, description }) => sendLeaderboardEmbed(channel, title, description)))
   const { rows } = await pool.query(`
     SELECT id, name, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day_created, msg_per_day_joined,
@@ -62,21 +138,24 @@ const generateAndSendLeaderboards = async (pool, channel) => {
     rank() OVER (ORDER BY msg_per_day_joined DESC) AS msg_per_day_joined_rank
     FROM members
   `)
+
   const combinedRanks = rows.map(row => ({ 
     name: row.name, 
-    rankSum: ['total_msg_rank', 'en_msg_rank', 'fr_msg_rank', 'other_msg_rank', 'pings_rank', 'msg_per_day_rank_created', 'msg_per_day_rank_joined']
+    rankSum: ['total_msg_rank', 'en_msg_rank', 'fr_msg_rank', 'other_msg_rank', 'pings_rank', 'msg_per_day_created_rank', 'msg_per_day_joined_rank']
       .reduce((sum, key) => sum + Number(row[key]), 0) 
   })).sort((a, b) => a.rankSum - b.rankSum).slice(0, 20)
-  const overallRankString = generateLeaderboard(combinedRanks, 'rankSum', x => (x / 6).toFixed(2))
+
+  const overallRankString = generateLeaderboard(combinedRanks, 'rankSum', x => (x / 7).toFixed(2))
   await sendLeaderboardEmbed(channel, 'Overall rank\nClassement général', overallRankString)
 }
 
 module.exports = async (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
   const stats = { server: {}, member: {} }
-  const counts = { all: 0, msg0: 0, msg1: 0, msg10: 0, msg100: 0, en: 0, fr: 0, ot: 0, enFr: 0, all: 0 }
+  const counts = { all: 0, msg0: 0, msg1: 0, msg10: 0, msg100: 0, en: 0, fr: 0, ot: 0, enFr: 0, enFrOt: 0 }
   const { rows: members } = await pool.query('SELECT * FROM members')
   counts.all = members.length
+
   members.forEach(member => {
     if (member.total_msg === 0) counts.msg0++
     else if (member.total_msg < 11) counts.msg1++
@@ -86,30 +165,34 @@ module.exports = async (client) => {
     else if (member.en_msg === 0 && member.fr_msg > 0) counts.fr++
     else if (member.en_msg === 0 && member.fr_msg === 0 && member.other_msg > 0) counts.ot++
     if (member.en_msg > 0 && member.fr_msg > 0) counts.enFr++
-    if (member.en_msg > 0 && member.fr_msg > 0 && member.other_msg > 0) counts.all++
+    if (member.en_msg > 0 && member.fr_msg > 0 && member.other_msg > 0) counts.enFrOt++
     ['total_msg', 'en_msg', 'fr_msg', 'other_msg'].forEach(key => {
       stats.member[key] = (stats.member[key] || 0) + member[key]
     })
   })
+
   const channel = await client.channels.fetch(nconf.get('CHANNEL_LEADERBOARD'))
-  const messages = await channel.messages.fetch({ limit: 12, cache: false })
-  await messages.forEach(message => message.delete())
+  const messages = await channel.messages.fetch({ limit: 15, cache: false })
+  await messages.forEach(message => message.delete()) 
+
   for (const [key, channelIds] of Object.entries(channels)) {
     const res = await fetch(`${baseUrl}?${channelIds.map(id => `channel_id=${id}`).join('&')}&include_nsfw=true`, nconf.get('USER1'))
     stats.server[`${key}_msg`] = JSON.parse(res).total_results
     await delay(6000)
   }
+
   const res = await fetch(`${baseUrl}?${allChannels.map(id => `channel_id=${id}`).join('&')}&include_nsfw=true`, nconf.get('USER1'))
   stats.server.total_msg = JSON.parse(res).total_results
+
   const summaryMessage = `
 Out of **${format(counts.all)}** users: **${format(counts.msg0)}** sent 0 messages, **${format(counts.msg1)}** sent 1~10 messages, **${format(counts.msg10)}** sent 11~99 messages, **${format(counts.msg100)}** sent 100+ messages.
 Out of **${format(counts.all - counts.msg0)}** users who sent a message: **${format(counts.en)}** only in English channels, **${format(counts.fr)}** only in French channels, **${format(counts.ot)}** only in Other channels,
-**${format(counts.enFr)}** in both English and French channels and **${format(counts.all)}** in English, French, as well as Other channels.\n
-Messages sent in the server:
+**${format(counts.enFr)}** in both English and French channels and **${format(counts.enFrOt)}** in English, French, as well as Other channels.\n
+Total messages sent in the server:
 All channels: **${format(stats.server.total_msg)}** (**${format(stats.member.total_msg)}** from users still in the server, **${format(stats.server.total_msg - stats.member.total_msg)}** from users no longer in the server)
 English channels: **${format(stats.server.en_msg)} (${format(stats.member.en_msg)}** from users still in the server, **${format(stats.server.en_msg - stats.member.en_msg)}** from users no longer in the server)
 French channels: **${format(stats.server.fr_msg)} (${format(stats.member.fr_msg)}** from users still in the server, **${format(stats.server.fr_msg - stats.member.fr_msg)}** from users no longer in the server)
 Other channels: **${format(stats.server.ot_msg)} (${format(stats.member.other_msg)}** from users still in the server, **${format(stats.server.ot_msg - stats.member.other_msg)}** from users no longer in the server)`
-  await channel.send(summaryMessage)
   await generateAndSendLeaderboards(pool, channel)
+  await channel.send(summaryMessage)
 }
