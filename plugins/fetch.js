@@ -152,7 +152,7 @@ async function addNewMembers(guild) {
       if (result.rows.length !== 0 || member.id === '78600305175961600' || daysSinceJoined < 7) continue
       const data = await fetchMember(member, false, undefined, nconf.get('USER1'))
       await pool.query('INSERT INTO members (id, name, created, joined, rejoined, first_msg, updated, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day_created, msg_per_day_joined) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', [member.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg !== null ? data.firstmsg : null, date(), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperdaycreated, data.msgperdayjoined])
-      await assignRoles(member, data.totalmsg, data.firstmsg, Math.floor((new Date(data.created).getFullYear() + new Date(data.joined).getFullYear() + new Date(data.rejoined).getFullYear() + (data.firstmsg !== null ? new Date(data.firstmsg).getFullYear() : new Date().getFullYear())) / 4))
+      await assignRoles(member, data.totalmsg, data.firstmsg, Math.floor((new Date(data.joined).getFullYear() + new Date(data.rejoined).getFullYear() + (data.firstmsg !== null ? new Date(data.firstmsg).getFullYear() : new Date().getFullYear())) / 3))
     } catch (err) {
       console.error('Error occurred while adding members:', err)
       process.exit(1)
@@ -182,7 +182,7 @@ async function updateMember(member, token) {
   const data = await fetchMember(member, true, result, token)
   await pool.query('UPDATE members SET name = $2, created = $3, joined = $4, rejoined = $5, first_msg = $6, updated = $7, total_msg = $8, en_msg = $9, fr_msg = $10, other_msg = $11, pings = $12, msg_per_day_created = $13, msg_per_day_joined = $14 WHERE id = $1',
     [member.id, data.name, data.created, data.joined, data.rejoined, data.firstmsg, date(), data.totalmsg, data.enmsg, data.frmsg, data.othermsg, data.pings, data.msgperdaycreated, data.msgperdayjoined])
-  await assignRoles(member, data.totalmsg, data.firstmsg, Math.floor((new Date(data.created).getFullYear() + new Date(data.joined).getFullYear() + new Date(data.rejoined).getFullYear() + (data.firstmsg !== null ? new Date(data.firstmsg).getFullYear() : new Date().getFullYear())) / 4))
+  await assignRoles(member, data.totalmsg, data.firstmsg, Math.floor((new Date(data.joined).getFullYear() + new Date(data.rejoined).getFullYear() + (data.firstmsg !== null ? new Date(data.firstmsg).getFullYear() : new Date().getFullYear())) / 3))
 }
 
 async function updateMembers(inactiveMembers, activeMembers) {
