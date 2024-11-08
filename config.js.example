@@ -1,6 +1,6 @@
 module.exports = {
   // Bot token. https://discordapp.com/developers/applications/me
-  // Used for starting the bot. Required for adding commands to the server with commands.js.
+  // Required for starting the bot and adding commands to the server with commands.js.
   TOKEN: '',
 
   // Bot Client ID.
@@ -8,15 +8,14 @@ module.exports = {
   CLIENT: '',
 
   // Server ID.
-  // Used for the fetch/leaderboard/logs/nickname/nitro/publish/streaming/youtube plugins.
   // Required for adding commands to the server with commands.js.
+  // Used for the fetch/leaderboard/logs/nickname/nitro/publish/streaming/youtube plugins.
   SERVER: '',
 
   // User tokens.
   // Used for the info command and the fetch/leaderboard plugins.
   USER1: '',
   USER2: '',
-  USER3: '',
 
   // Database URL.
   // Used for the info command and the fetch/leaderboard plugins.
@@ -24,74 +23,83 @@ module.exports = {
 
   // Twitter keys. https://developer.twitter.com/en/apps
   // Used for the twitter plugin.
-  CONSUMER_KEY: '',
-  CONSUMER_SECRET: '',
-  ACCESS_TOKEN: '',
+  CONSUMER_KEY:        '',
+  CONSUMER_SECRET:     '',
+  ACCESS_TOKEN:        '',
   ACCESS_TOKEN_SECRET: '',
 
   // Announcements/Annonces/Ads/Almanax/Bot/Leaderboard/Log channel IDs.
   // Used for the cleanup/rss/twitter/youtube plugins.
   CHANNEL_ANNOUNCEMENTS: '',
-  CHANNEL_ANNONCES: '',
-  CHANNEL_ADS: '',
+  CHANNEL_ANNONCES:      '',
+  CHANNEL_ADS:           '',
   // Used for the almanax plugin.
-  CHANNEL_ALMANAX: '',
+  CHANNEL_ALMANAX:       '',
   // Used for the ads command.
-  CHANNEL_BOT: '',
+  CHANNEL_BOT:           '',
   // Used for the leaderboard plugin.
-  CHANNEL_LEADERBOARD: '',
+  CHANNEL_LEADERBOARD:   '',
   // Used for the warn command and the logs plugin.
-  CHANNEL_LOG: '',
+  CHANNEL_LOG:           '',
+
+  // Role icon image URLs that are 256KB or less.
+  // Used for the nitro plugin.
+  ROLE_ICONS: [
+    '',
+  ],
 
   // Nitro Booster/Streamer/Streaming/Leaderboard role IDs.
   // Used for the nitro plugin.
-  ROLE_NITRO: '',
+  ROLE_NITRO:       '',
   // Used for the streaming plugin.
-  ROLE_STREAMER: '',
-  ROLE_STREAMING: '',
+  ROLE_STREAMER:    '',
+  ROLE_STREAMING:   '',
   // Used for the warn command.
-  ROLE_WARN1: '',
-  ROLE_WARN2: '',
-  ROLE_WARN3: '',
+  ROLE_WARN1:       '',
+  ROLE_WARN2:       '',
+  ROLE_WARN3:       '',
   // Used for the info command and the fetch plugin.
-  ROLE_IRON: '',
-  ROLE_COPPER: '',
-  ROLE_BRONZE: '',
-  ROLE_SILVER: '',
-  ROLE_GOLD: '',
-  ROLE_CRYSTAL: '',
-  ROLE_DIAMOND: '',
-  ROLE_LEGEND: '',
-  ROLE_EPIC: '',
-  ROLE_OMEGA: '',
+  ROLE_GLOOT:       '',
+  ROLE_TOFU:        '',
+  ROLE_BOUF:        '',
+  ROLE_BRONZE:      '',
+  ROLE_SILVER:      '',
+  ROLE_GOLD:        '',
+  ROLE_CRYSTAL:     '',
+  ROLE_DIAMOND:     '',
+  ROLE_LEGEND:      '',
+  ROLE_EPIC:        '',
+  ROLE_OMEGA:       '',
+  ROLE_DOFUS:       '',
   ROLE_ACHIEVEMENT: '',
-  ROLE_YEAR15: '',
-  ROLE_YEAR16: '',
-  ROLE_YEAR17: '',
-  ROLE_YEAR18: '',
-  ROLE_YEAR19: '',
-  ROLE_YEAR20: '',
-  ROLE_YEAR21: '',
-  ROLE_YEAR22: '',
-  ROLE_YEAR23: '',
-  ROLE_YEAR24: '',
+  ROLE_YEAR15:      '',
+  ROLE_YEAR16:      '',
+  ROLE_YEAR17:      '',
+  ROLE_YEAR18:      '',
+  ROLE_YEAR19:      '',
+  ROLE_YEAR20:      '',
+  ROLE_YEAR21:      '',
+  ROLE_YEAR22:      '',
+  ROLE_YEAR23:      '',
+  ROLE_YEAR24:      '',
+  ROLE_YEAR25:      '',
 
   // Plugin variables, enter true for the ones that should be enabled.
-  ALMANAX: '',
-  CLEANUP: '',
-  FETCH: '',
+  ALMANAX:     '',
+  CLEANUP:     '',
+  FETCH:       '',
   LEADERBOARD: '',
-  LOGS: '',
-  NICKNAME: '',
-  NITRO: '',
-  PUBLISH: '',
-  RSS: '',
-  STATS: '',
-  STREAMING: '',
-  TWITTER: '',
-  YOUTUBE: '',
+  LOGS:        '',
+  NICKNAME:    '',
+  NITRO:       '',
+  PUBLISH:     '',
+  RSS:         '',
+  STATS:       '',
+  STREAMING:   '',
+  TWITTER:     '',
+  YOUTUBE:     '',
   // Used for loading commands, enter true to enable.
-  COMMANDS: '',
+  COMMANDS:    '',
   // Used for the express plugin, enter true if running locally.
-  LOCAL: ''
+  LOCAL:       ''
 }

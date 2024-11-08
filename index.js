@@ -17,7 +17,7 @@ client.on('ready', () => {
   Object.values(plugins).forEach(plugin => plugin(client))
 })
 
-client.on('interactionCreate', async interaction => {
+client.on('interactionCreate', async (interaction) => {
   if (interaction.type !== InteractionType.ApplicationCommand || !client.commands.get(interaction.commandName)) return
   try {
     await client.commands.get(interaction.commandName).execute(interaction)

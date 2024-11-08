@@ -30,27 +30,27 @@ function formatFileSize(bytes) {
 
 async function processAttachment(attachment, message, mainEmbed) {
   try {
-    const response = await fetch(attachment.url)
-    if (!response.ok) console.error(`Failed to fetch attachment: ${response.status} ${response.statusText}`)
+    let response = await fetch(attachment.proxyURL)
+    if (!response.ok) {
+      response = await fetch(attachment.url)
+      if (!response.ok) throw new Error(`Failed to fetch attachment: ${response.status} ${response.statusText}`)
+    }
     const buffer = await response.arrayBuffer()
-    if (!buffer || buffer.byteLength === 0) console.error('Received empty buffer for attachment')
-    const attachmentFile = new AttachmentBuilder(Buffer.from(buffer), { name: attachment.name, description: `Deleted file from ${message.author.tag}` })
-    const embed = new EmbedBuilder()
+    const attachmentFile = new AttachmentBuilder(Buffer.from(buffer), { name: attachment.name })
+    return { file: attachmentFile, embed: new EmbedBuilder()
       .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
       .setDescription(`**Name:** ${attachment.name}\n**Size:** ${formatFileSize(attachment.size)}\n**Type:** ${attachment.contentType || 'Unknown'}`)
       .setFooter({ text: `#${message.channel.name}` })
       .setTimestamp(message.createdTimestamp)
       .setColor(mainEmbed.data.color)
-    return { file: attachmentFile, embed: embed }
+    }
   } catch (err) {
-    console.error(`Failed to process attachment: ${attachment.name}`, err)
-    return {
-      embed: new EmbedBuilder()
-        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-        .setDescription(`❌ Failed to save attachment: ${attachment.name}\nError: ${err.message}`)
-        .setFooter({ text: `#${message.channel.name}` })
-        .setTimestamp(message.createdTimestamp)
-        .setColor('Red')
+    return { embed: new EmbedBuilder()
+      .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+      .setDescription(`${err}\n\n**Name:** ${attachment.name}\n**Size:** ${formatFileSize(attachment.size)}\n**Type:** ${attachment.contentType || 'Unknown'}`)
+      .setFooter({ text: `#${message.channel.name}` })
+      .setTimestamp(message.createdTimestamp)
+      .setColor(mainEmbed.data.color)
     }
   }
 }
@@ -66,10 +66,7 @@ module.exports = async (client) => {
     if (message.content) await logChannel.send({ embeds: [mainEmbed] })
     if (message.attachments.size > 0) {
       const attachments = await Promise.all(Array.from(message.attachments.values()).map(attachment => processAttachment(attachment, message, mainEmbed)))
-      for (const attachment of attachments) {
-        if (attachment.file) await logChannel.send({ files: [attachment.file], embeds: [attachment.embed] })
-        else await logChannel.send({ embeds: [attachment.embed] })
-      }
+      for (const { file, embed } of attachments) file ? await logChannel.send({ files: [file], embeds: [embed] }) : await logChannel.send({ embeds: [embed] })
     }
   })
 
@@ -83,10 +80,7 @@ module.exports = async (client) => {
       if (message.content) await logChannel.send({ embeds: [mainEmbed] })
       if (message.attachments.size > 0) {
         const attachments = await Promise.all(Array.from(message.attachments.values()).map(attachment => processAttachment(attachment, message, mainEmbed)))
-        for (const attachment of attachments) {
-          if (attachment.file) await logChannel.send({ files: [attachment.file], embeds: [attachment.embed] })
-          else await logChannel.send({ embeds: [attachment.embed] })
-        }
+        for (const { file, embed } of attachments) file ? await logChannel.send({ files: [file], embeds: [embed] }) : await logChannel.send({ embeds: [embed] })
       }
     })
   })
