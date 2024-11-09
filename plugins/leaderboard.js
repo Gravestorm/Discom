@@ -11,13 +11,13 @@ const baseUrl = `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messag
 const channels = {
   fr: ['297779639609327617', '364086525799038976', '1270756963575271424', '626165637252907045', '372100313890553856', '534121863857569792', '1079510661471666297', '1022612394905718854'],
   en: ['78581046714572800', '364081918116888576', '1270759070793597000', '626165608010088449', '297780920268750858', '534121764045717524'],
-  ot: ['297779810279751680', '356038271140233216', '299523503592439809', '1006449121948868659', '297780878980153344', '297809615490383873', '297779846187188234', '1227717112802578605', '582715083537514526', '678244173006241842', '297779010417590274', '892471107318345749']
+  ot: ['297779810279751680', '356038271140233216', '299523503592439809', '1006449121948868659', '297780878980153344', '297809615490383873', '297779846187188234', '1227717112802578605', '582715083537514526', '678244173006241842', '297779010417590274', '892471107318345749', '1275492450831695882']
 }
 const allChannels = [...channels.fr, ...channels.en, ...channels.ot]
 
-const format = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+const format = (x) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
-const formatTimeDifference = x => {
+const formatTimeDifference = (x) => {
   const milliseconds = Number(x)
   const seconds = Math.floor(milliseconds / 1000)
   const minutes = Math.floor(seconds / 60)
@@ -55,13 +55,13 @@ const generateAndSendLeaderboards = async (pool, channel) => {
     {
       query: 'SELECT * FROM members ORDER BY joined ASC LIMIT 20',
       key: 'joined',
-      title: 'Oldest server join date with people who rejoined later\nDate de première arrivée la plus ancienne avec les personnes ayant rejoint de nouveau',
+      title: 'Oldest server join date including people who rejoined later\nDate de première adhésion au serveur incluant les personnes ayant rejoint de nouveau',
       formatFunc: x => date(Number(x))
     },
     {
       query: 'SELECT * FROM members ORDER BY rejoined ASC LIMIT 20',
       key: 'rejoined',
-      title: 'Oldest server join date without people who rejoined later\nDate de première arrivée la plus ancienne sans les personnes ayant rejoint de nouveau',
+      title: 'Oldest server join date not including people who rejoined later\nDate de première adhésion au serveur sans inclure les personnes ayant rejoint de nouveau',
       formatFunc: x => date(Number(x))
     },
     {
@@ -127,6 +127,7 @@ const generateAndSendLeaderboards = async (pool, channel) => {
   }))
 
   await Promise.all(generatedLeaderboards.map(({ title, description }) => sendLeaderboardEmbed(channel, title, description)))
+
   const { rows } = await pool.query(`
     SELECT id, name, total_msg, en_msg, fr_msg, other_msg, pings, msg_per_day_created, msg_per_day_joined,
     rank() OVER (ORDER BY total_msg DESC) AS total_msg_rank,
