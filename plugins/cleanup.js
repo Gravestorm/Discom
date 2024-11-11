@@ -14,7 +14,7 @@ module.exports = (client) => {
         const daysSincePosted = (currentDate - message.createdTimestamp) / (1000 * 60 * 60 * 24)
         if ((channelKey === 'CHANNEL_ADS' && daysSincePosted > 7 && message.content.includes('twitch.tv')) ||
             (channelKey !== 'CHANNEL_ADS' && daysSincePosted > 60 && message.author.bot)) {
-          return message.delete().catch(() => {})
+          return message.delete()
         }
       }).filter(Boolean)
       await Promise.all(deletePromises)
