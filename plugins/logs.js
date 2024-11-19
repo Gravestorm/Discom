@@ -5,7 +5,7 @@ const delay = require('../helpers/delay')
 const nconf = require('nconf')
 const randomColor = require('randomcolor')
 const requiredKeys = ['LOGS', 'CHANNEL_LOG', 'SERVER']
-const exemptChannels = ['ads', 'almanax', 'annonces', 'announcements', 'helpers', 'leaderboard', 'madhouse', 'regles-info', 'rules-info', 'server']
+const exemptChannels = ['ads', 'almanax', 'annonces', 'announcements', 'guide-en', 'guide-fr', 'helpers', 'leaderboard', 'madhouse', 'regles-info', 'rules-info', 'server']
 
 const fetchLogChannel = guild => guild.channels.fetch(nconf.get('CHANNEL_LOG'))
 

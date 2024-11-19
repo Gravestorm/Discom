@@ -4,10 +4,10 @@ const pool = new Pool({ connectionString: nconf.get('DATABASE_URL'), max: 20 })
 const date = require('../helpers/date')
 const delay = require('../helpers/delay')
 const fetch = require('../helpers/fetch')
-const requiredKeys = ['FETCH', 'USER1', 'DATABASE_URL', 'SERVER', 'ROLE_GLOOT', 'ROLE_TOFU', 'ROLE_BOUF', 'ROLE_BRONZE', 'ROLE_SILVER', 'ROLE_GOLD', 'ROLE_CRYSTAL', 'ROLE_DIAMOND', 'ROLE_LEGEND', 'ROLE_EPIC', 'ROLE_OMEGA', 'ROLE_DOFUS', 'ROLE_ACHIEVEMENT', 'ROLE_YEAR15', 'ROLE_YEAR16', 'ROLE_YEAR17', 'ROLE_YEAR18', 'ROLE_YEAR19', 'ROLE_YEAR20', 'ROLE_YEAR21', 'ROLE_YEAR22', 'ROLE_YEAR23', 'ROLE_YEAR24', 'ROLE_YEAR25']
+const requiredKeys = ['FETCH', 'DATABASE_URL', 'SERVER', 'ROLE_GLOOT', 'ROLE_TOFU', 'ROLE_BOUF', 'ROLE_BRONZE', 'ROLE_SILVER', 'ROLE_GOLD', 'ROLE_CRYSTAL', 'ROLE_DIAMOND', 'ROLE_LEGEND', 'ROLE_EPIC', 'ROLE_OMEGA', 'ROLE_DOFUS', 'ROLE_ACHIEVEMENT', 'ROLE_YEAR15', 'ROLE_YEAR16', 'ROLE_YEAR17', 'ROLE_YEAR18', 'ROLE_YEAR19', 'ROLE_YEAR20', 'ROLE_YEAR21', 'ROLE_YEAR22', 'ROLE_YEAR23', 'ROLE_YEAR24', 'ROLE_YEAR25']
 const baseUrl = `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search`
-const frChannels = ['297779639609327617', '364086525799038976', '1270756963575271424', '626165637252907045', '372100313890553856', '534121863857569792', '1079510661471666297', '1022612394905718854']
-const enChannels = ['78581046714572800', '364081918116888576', '1270759070793597000', '626165608010088449', '297780920268750858', '534121764045717524']
+const frChannels = ['297779639609327617', '364086525799038976', '1270756963575271424', '626165637252907045', '372100313890553856', '534121863857569792', '1079510661471666297', '1022612394905718854', '1308372853879607406']
+const enChannels = ['78581046714572800', '364081918116888576', '1270759070793597000', '626165608010088449', '297780920268750858', '534121764045717524', '1308372908682383370']
 const otChannels = ['297779810279751680', '356038271140233216', '299523503592439809', '1006449121948868659', '297780878980153344', '297809615490383873', '297779846187188234', '1227717112802578605', '582715083537514526', '678244173006241842', '297779010417590274', '892471107318345749', '1275492450831695882']
 const allChannels = [...frChannels, ...enChannels, ...otChannels]
 const processingMembers = new Map()
@@ -252,6 +252,7 @@ async function processMessage(member, token) {
 module.exports = async (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
   try {
+    const tasks = []
     const guild = await client.guilds.fetch(nconf.get('SERVER'))
     await guild.members.fetch({ force: true })
     await pool.connect()
@@ -261,28 +262,35 @@ module.exports = async (client) => {
     await removeOldMembers(guild)
 
     if (nconf.get('USER3')) {
-      client.on('messageCreate', async (message) => {
-        const member = message.member
-        const daysSinceJoined = (Date.now() - Number(member.joinedTimestamp)) / (1000 * 60 * 60 * 24)
-        if (!member || message.guild !== nconf.get('SERVER') || member.id === '78600305175961600' || daysSinceJoined < 7) return
-        await processMessage(member, nconf.get('USER3'))
-      })
-    } else if (nconf.get('USER2')) {
-      const { rows: activeMembers } = await pool.query('SELECT * FROM members WHERE total_msg > 0 ORDER BY updated ASC')
-      const { rows: inactiveMembers } = await pool.query('SELECT * FROM members WHERE total_msg = 0 ORDER BY updated ASC')
-      const activeMembersSorted = activeMembers.map(member => guild.members.resolve(member.id)).filter(Boolean)
-      const inactiveMembersSorted = inactiveMembers.map(member => guild.members.resolve(member.id)).filter(Boolean)
-      await queryMembers(inactiveMembersSorted, activeMembersSorted)
-    } else {
-      const { rows: totalMembers } = await pool.query('SELECT * FROM members ORDER BY updated ASC') 
-      const totalMembersSorted = totalMembers.map(member => guild.members.resolve(member.id)).filter(Boolean)
-      for (const member of totalMembersSorted) await queryMember(member, nconf.get('USER1'))
+      tasks.push(new Promise((resolve) => {
+        client.on('messageCreate', async (message) => {
+          const daysSinceJoined = (Date.now() - Number(message.member?.joinedTimestamp)) / (1000 * 60 * 60 * 24)
+          if (!message.guild || !message.member || message.author.bot || message.guild.id !== nconf.get('SERVER') || message.member.id === '78600305175961600' || isNaN(daysSinceJoined) || daysSinceJoined < 7) return
+          await processMessage(message.member, nconf.get('USER3'))
+        })
+        resolve()
+      }))
     }
+
+    if (nconf.get('USER2')) {
+      tasks.push((async () => {
+        const { rows: activeMembers } = await pool.query('SELECT * FROM members WHERE total_msg > 0 ORDER BY updated ASC')
+        const { rows: inactiveMembers } = await pool.query('SELECT * FROM members WHERE total_msg = 0 ORDER BY updated ASC')
+        const activeMembersSorted = activeMembers.map(member => guild.members.resolve(member.id)).filter(Boolean)
+        const inactiveMembersSorted = inactiveMembers.map(member => guild.members.resolve(member.id)).filter(Boolean)
+        await queryMembers(inactiveMembersSorted, activeMembersSorted)
+      })())
+    } else if (nconf.get('USER1')) {
+      tasks.push((async () => {
+        const { rows: totalMembers } = await pool.query('SELECT * FROM members ORDER BY updated ASC') 
+        const totalMembersSorted = totalMembers.map(member => guild.members.resolve(member.id)).filter(Boolean)
+        for (const member of totalMembersSorted) await queryMember(member, nconf.get('USER1'))
+      })())
+    }
+
+    await Promise.all(tasks)
   } catch (err) {
     console.error('Error occurred while fetching users:', err)
     process.exit(1)
-  } finally {
-    console.log('Fetching finished')
-    await pool.end()
   }
 }
