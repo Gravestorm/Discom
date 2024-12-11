@@ -9,7 +9,7 @@ module.exports = {
 
   // Server ID.
   // Required for adding commands to the server with commands.js.
-  // Used for the fetch/leaderboard/logs/nickname/nitro/publish/streaming/youtube plugins.
+  // Used for the fetch/leaderboard/logs/nickname/nitro/publish/streaming/voice/youtube plugins.
   SERVER: '',
 
   // User tokens.
@@ -97,6 +97,7 @@ module.exports = {
   STATS:       '',
   STREAMING:   '',
   TWITTER:     '',
+  VOICE:       '',
   YOUTUBE:     '',
   // Used for loading commands, enter true to enable.
   COMMANDS:    '',
