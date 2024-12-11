@@ -16,9 +16,11 @@ const choices = [
 module.exports = {
   data: new SlashCommandBuilder().setName('draw').setDescription('Ask the bot to generate an image')
   .addStringOption(option => option.setName('prompt').setDescription('Write a prompt for the image').setRequired(true))
-  .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(...choices)),
+  .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(...choices))
+  .addBooleanOption(option => option.setName('silent').setDescription('Should the response be visible only to you if true or be public if false')),
   async execute(interaction) {
-    await interaction.deferReply()
+    const isSilent = options.getBoolean('silent') || true
+    await interaction.deferReply({ ephemeral: isSilent })
     const model = interaction.options.getString('version') || 'prodia'
     const prompt = interaction.options.getString('prompt')
     try {
@@ -26,10 +28,10 @@ module.exports = {
       const { data } = await axios.get(reply, { responseType: 'arraybuffer' })
       const tempFilePath = path.join(process.cwd(), `${Date.now()}.png`)
       await fs.writeFile(tempFilePath, Buffer.from(data))
-      await interaction.editReply({ content: `*${prompt}*\n\n`, files: [tempFilePath] })
+      await interaction.editReply({ content: `*${prompt}*\n\n`, files: [tempFilePath], ephemeral: isSilent })
       await fs.unlink(tempFilePath)
     } catch (err) {
-      await interaction.editReply(err.toString())
+      await interaction.editReply({ content: err.toString(), ephemeral: isSilent })
     }
   }
 }

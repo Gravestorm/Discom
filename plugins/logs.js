@@ -5,7 +5,7 @@ const delay = require('../helpers/delay')
 const nconf = require('nconf')
 const randomColor = require('randomcolor')
 const requiredKeys = ['LOGS', 'CHANNEL_LOG', 'SERVER']
-const exemptChannels = ['ads', 'almanax', 'annonces', 'announcements', 'guide-en', 'guide-fr', 'helpers', 'leaderboard', 'madhouse', 'regles-info', 'rules-info', 'server']
+const exemptChannels = ['ads', 'almanax', 'annonces', 'announcements', 'guide-en', 'guide-fr', 'helpers', 'leaderboard', 'madhouse', 'regles-info', 'rules-info', 'ressources-fr', 'resources-en', 'server']
 
 const fetchLogChannel = guild => guild.channels.fetch(nconf.get('CHANNEL_LOG'))
 
@@ -59,7 +59,7 @@ module.exports = async (client) => {
   if (!requiredKeys.every(key => nconf.get(key))) return
 
   client.on('messageDelete', async (message) => {
-    if (message.guildId !== nconf.get('SERVER') || isExempt(message.channel)) return
+    if (message.guild.id !== nconf.get('SERVER') || isExempt(message.channel)) return
     const logChannel = await fetchLogChannel(message.guild)
     if (!logChannel) return
     const mainEmbed = generateEmbed(message, message.content || ' ', message.createdTimestamp)
