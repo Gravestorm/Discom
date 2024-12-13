@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionFlagsBits } = require('discord.js')
 const nconf = require('nconf')
-const requiredKeys = ['CHANNEL_ADS', 'CHANNEL_BOT', 'CHANNEL_LOG', 'ROLE_YOUTUBER', 'ROLE_STREAMER']
+const requiredKeys = ['CHANNEL_ADS', 'CHANNEL_BOT', 'ROLE_YOUTUBER', 'ROLE_STREAMER', 'THREAD_ADS']
 
 module.exports = {
     data: new SlashCommandBuilder().setName('ads').setDescription('Request Streamer/Youtuber role')
@@ -30,7 +30,7 @@ module.exports = {
       const [action, userId, url] = interaction.customId.split(':')
       const targetUser = await interaction.guild.members.fetch(userId)
       const adsChannel = nconf.get('CHANNEL_ADS')
-      const logChannel = await interaction.guild.channels.fetch(nconf.get('CHANNEL_LOG'))
+      const logChannel = await interaction.guild.channels.fetch(nconf.get('THREAD_ADS'))
 
       let roleName = ''
       let roleId = ''

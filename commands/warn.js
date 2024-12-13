@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
 const nconf = require('nconf')
 const date = require('../helpers/date')
-const requiredKeys = ['CHANNEL_LOG', 'ROLE_WARN1', 'ROLE_WARN2', 'ROLE_WARN3']
+const requiredKeys = ['ROLE_WARN1', 'ROLE_WARN2', 'ROLE_WARN3', 'THREAD_WARN']
 
 module.exports = {
   data: new SlashCommandBuilder().setName('warn').setDescription('Warn a user')
@@ -17,7 +17,7 @@ module.exports = {
     const isUnwarn = options.getBoolean('unwarn')
     const isSilent = options.getBoolean('silent')
     const warnRoles = requiredKeys.slice(1).map(key => nconf.get(key))
-    const logChannel = await guild.channels.fetch(nconf.get('CHANNEL_LOG'))
+    const logChannel = await guild.channels.fetch(nconf.get('THREAD_WARN'))
     const getCurrentWarnLevel = () => warnRoles.findIndex(role => user.roles.cache.has(role))
     const updateWarnRole = async (currentLevel, isUnwarn) => {
       const newLevel = isUnwarn ? Math.max(currentLevel - 1, -1) : Math.min(currentLevel + 1, 2)
