@@ -11,6 +11,7 @@ const enChannels = ['78581046714572800', '364081918116888576', '1270759070793597
 const otChannels = ['297779810279751680', '356038271140233216', '299523503592439809', '1006449121948868659', '297780878980153344', '297809615490383873', '297779846187188234', '1227717112802578605', '582715083537514526', '678244173006241842', '297779010417590274', '892471107318345749', '1275492450831695882']
 const allChannels = [...frChannels, ...enChannels, ...otChannels]
 const processingMembers = new Map()
+const days = 2
 
 async function fetchWithRetries(url, token, retries = 5) {
   for (let i = 0; i < retries; i++) {
@@ -235,7 +236,7 @@ module.exports = async (client) => {
       tasks.push(new Promise((resolve) => {
         client.on('messageCreate', async (message) => {
           const daysSinceJoined = (Date.now() - Number(message.member?.joinedTimestamp)) / (1000 * 60 * 60 * 24)
-          if (!message.guild || !message.member || message.author.bot || message.guild.id !== nconf.get('SERVER') || message.member.id === '78600305175961600' || isNaN(daysSinceJoined) || daysSinceJoined < 7) return
+          if (!message.guild || !message.member || message.author.bot || message.guild.id !== nconf.get('SERVER') || message.member.id === '78600305175961600' || isNaN(daysSinceJoined) || daysSinceJoined < days) return
           await processMessage(message.member, nconf.get('USER3'), guild)
         })
         resolve()
@@ -249,7 +250,7 @@ module.exports = async (client) => {
           const member = sortedMembers[i]
           const result = await pool.query('SELECT * FROM members WHERE id = $1', [member.id])
           const daysSinceJoined = (Date.now() - Number(member.joinedTimestamp)) / (1000 * 60 * 60 * 24)
-          if (result.rows.length !== 0 || member.id === '78600305175961600' || daysSinceJoined < 7) continue
+          if (result.rows.length !== 0 || member.id === '78600305175961600' || daysSinceJoined < days) continue
           const data = await fetchMember(member, false, undefined, nconf.get('USER1'), guild)
           if (data) await updateMemberData(member, data, true)
         }
@@ -267,7 +268,7 @@ module.exports = async (client) => {
           const member = sortedMembers[i]
           const result = await pool.query('SELECT * FROM members WHERE id = $1', [member.id])
           const daysSinceJoined = (Date.now() - Number(member.joinedTimestamp)) / (1000 * 60 * 60 * 24)
-          if (result.rows.length !== 0 || member.id === '78600305175961600' || daysSinceJoined < 7) continue
+          if (result.rows.length !== 0 || member.id === '78600305175961600' || daysSinceJoined < days) continue
           const data = await fetchMember(member, false, undefined, nconf.get('USER1'), guild)
           if (data) await updateMemberData(member, data, true)
         }

@@ -18,11 +18,23 @@ client.on('ready', () => {
 })
 
 client.on('interactionCreate', async (interaction) => {
-  if (interaction.type !== InteractionType.ApplicationCommand || !client.commands.get(interaction.commandName)) return
-  try {
-    await client.commands.get(interaction.commandName).execute(interaction)
-  } catch (err) {
-    await interaction.reply({ content: err.toString(), ephemeral: true })
+  if (interaction.type === InteractionType.ApplicationCommand) {
+    const command = client.commands.get(interaction.commandName)
+    if (!command) return
+    try {
+      await command.execute(interaction)
+    } catch (err) {
+      await interaction.reply({ content: err.toString(), ephemeral: true })
+    }
+  } else if (interaction.isButton()) {
+    if (interaction.customId.startsWith('grant_') || interaction.customId.startsWith('deny_')) {
+      const adsRoleCommand = require('./commands/ads.js')
+      try {
+        await adsRoleCommand.handleRoleRequestButtons(interaction)
+      } catch (err) {
+        await interaction.reply({ content: err.toString(), ephemeral: true })
+      }
+    }
   }
 })
 

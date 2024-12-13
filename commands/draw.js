@@ -19,7 +19,7 @@ module.exports = {
   .addStringOption(option => option.setName('version').setDescription('Choose AI version').addChoices(...choices))
   .addBooleanOption(option => option.setName('silent').setDescription('Should the response be visible only to you if true or be public if false')),
   async execute(interaction) {
-    const isSilent = options.getBoolean('silent') || true
+    const isSilent = interaction.options.getBoolean('silent') || true
     await interaction.deferReply({ ephemeral: isSilent })
     const model = interaction.options.getString('version') || 'prodia'
     const prompt = interaction.options.getString('prompt')
