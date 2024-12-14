@@ -24,7 +24,7 @@ module.exports = async (client) => {
 
     if (fullChannels.length === allChannels.length) {
       const num = Math.max(...allChannels.map(channel => channel.number)) + 1
-      await category.children.create({ name: `General ${num} (FR) ${emojis[num - 1]}`, type: ChannelType.GuildVoice })
+      await category.children.create({ name: `General ${num} (FR) ${emojis[num - 1] || emojis[(num - 1) % emojis.length]}`, type: ChannelType.GuildVoice })
     }
 
     if (emptyChannels.length > 1 && modifiableEmptyChannels.length > 0) {
@@ -38,7 +38,7 @@ module.exports = async (client) => {
       .sort((a, b) => a.number - b.number)
     let currentNumber = 1
     for (const { channel, number } of updatedChannels) {
-      if (number !== currentNumber) await channel.edit({ name: `General ${currentNumber} (FR) ${emojis[currentNumber - 1]}` })
+      if (number !== currentNumber) await channel.edit({ name: `General ${currentNumber} (FR) ${emojis[currentNumber - 1]  || emojis[(currentNumber - 1) % emojis.length]}` })
       currentNumber++
     }
   })
