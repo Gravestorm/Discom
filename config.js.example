@@ -16,6 +16,7 @@ module.exports = {
   // Used for the info command and the fetch/leaderboard plugins.
   USER1: '',
   USER2: '',
+  USER3: '',
 
   // Database URL.
   // Used for the info command and the fetch/leaderboard plugins.
@@ -28,19 +29,22 @@ module.exports = {
   ACCESS_TOKEN:        '',
   ACCESS_TOKEN_SECRET: '',
 
-  // Announcements/Annonces/Ads/Almanax/Bot/Leaderboard/Log channel IDs.
+  // Channel IDs.
   // Used for the cleanup/rss/twitter/youtube plugins.
   CHANNEL_ANNOUNCEMENTS: '',
   CHANNEL_ANNONCES:      '',
   CHANNEL_ADS:           '',
   // Used for the almanax plugin.
   CHANNEL_ALMANAX:       '',
-  // Used for the ads command.
-  CHANNEL_BOT:           '',
   // Used for the leaderboard plugin.
   CHANNEL_LEADERBOARD:   '',
-  // Used for the warn command and the logs plugin.
+  // Used for the logs plugin.
   CHANNEL_LOG:           '',
+  // Used for the warn command.
+  THREAD_WARN:           '',
+  // Used for the ads commands.
+  CHANNEL_BOT:           '',
+  THREAD_ADS:            '',
 
   // Role icon image URLs that are 256KB or less.
   // Used for the nitro plugin.
@@ -48,10 +52,11 @@ module.exports = {
     '',
   ],
 
-  // Nitro Booster/Streamer/Streaming/Leaderboard role IDs.
+  // Role IDs.
   // Used for the nitro plugin.
   ROLE_NITRO:       '',
-  // Used for the streaming plugin.
+  // Used for the ads command and the streaming plugin.
+  ROLE_YOUTUBER:    '',
   ROLE_STREAMER:    '',
   ROLE_STREAMING:   '',
   // Used for the warn command.
