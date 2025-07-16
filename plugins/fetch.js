@@ -6,12 +6,12 @@ const delay = require('../helpers/delay')
 const fetch = require('../helpers/fetch')
 const requiredKeys = ['FETCH', 'DATABASE_URL', 'SERVER', 'ROLE_GLOOT', 'ROLE_TOFU', 'ROLE_BOUF', 'ROLE_BRONZE', 'ROLE_SILVER', 'ROLE_GOLD', 'ROLE_CRYSTAL', 'ROLE_DIAMOND', 'ROLE_LEGEND', 'ROLE_EPIC', 'ROLE_OMEGA', 'ROLE_DOFUS', 'ROLE_ACHIEVEMENT', 'ROLE_YEAR15', 'ROLE_YEAR16', 'ROLE_YEAR17', 'ROLE_YEAR18', 'ROLE_YEAR19', 'ROLE_YEAR20', 'ROLE_YEAR21', 'ROLE_YEAR22', 'ROLE_YEAR23', 'ROLE_YEAR24', 'ROLE_YEAR25']
 const baseUrl = `https://discord.com/api/v9/guilds/${nconf.get('SERVER')}/messages/search`
-const frChannels = ['297779639609327617', '364086525799038976', '1270756963575271424', '626165637252907045', '372100313890553856', '534121863857569792', '1079510661471666297', '1022612394905718854', '1308372853879607406', '1313146990787297331']
-const enChannels = ['78581046714572800', '364081918116888576', '1270759070793597000', '626165608010088449', '297780920268750858', '534121764045717524', '1308372908682383370']
-const otChannels = ['297779810279751680', '356038271140233216', '299523503592439809', '1006449121948868659', '297780878980153344', '297809615490383873', '297779846187188234', '1227717112802578605', '582715083537514526', '297779010417590274', '892471107318345749', '1275492450831695882']
+const frChannels = ['297779639609327617', '364086525799038976', '1313146990787297331', '1394492145997578260', '1394492176477585539', '1079510661471666297', '626165637252907045', '372100313890553856', '534121863857569792', '1270756963575271424', '1022612394905718854', '297784724775239681', '297784820086341632', '715113653199831041', '715113687958159400']
+const enChannels = ['78581046714572800', '364081918116888576', '1394490251744907395', '1394492432585854987', '626165608010088449', '297780920268750858', '534121764045717524', '1270759070793597000', '297784699403894794', '297791026398232578']
+const otChannels = ['678708610762670101', '678610533699813407', '356039693332381696', '297780078245576704', '297779810279751680', '356038271140233216', '299523503592439809', '1308372853879607406', '1308372908682383370', '364158526941298698', '1361674951156826213', '297780878980153344', '297809615490383873', '297779846187188234', '1227717112802578605', '582715083537514526', '985844390402596865', '297779010417590274', '972901996162088992', '590904233650552833', '892471107318345749', '1144005251385528331', '818570606374420501']
 const allChannels = [...frChannels, ...enChannels, ...otChannels]
 const processingMembers = new Map()
-const days = 3
+const days = 1
 
 async function fetchWithRetries(url, token, retries = 5) {
   for (let i = 0; i < retries; i++) {
@@ -124,6 +124,7 @@ async function fetchMember(member, refetch, data, token, guild) {
   let joined = refetch ? Number(data.joined ?? member.joinedTimestamp) : Number(member.joinedTimestamp)
   let rejoined = Number(member.joinedTimestamp)
   let firstmsg = refetch ? Number(data.first_msg) : null
+  let updated = refetch ? Number(data.updated) : null
   let totalmsg = refetch ? data.total_msg : 0
   let enmsg = refetch ? data.en_msg : 0
   let frmsg = refetch ? data.fr_msg : 0
@@ -132,7 +133,7 @@ async function fetchMember(member, refetch, data, token, guild) {
   let msgperdaycreated = refetch ? data.msg_per_day_created : 0
   let msgperdayjoined = refetch ? data.msg_per_day_joined : 0
 
-  console.log('Fetching member:', member.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperdaycreated, msgperdayjoined, created, joined, rejoined, firstmsg, refetch ? data.updated : refetch)
+  console.log('Fetching member:', member.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperdaycreated, msgperdayjoined, date(created), date(joined), date(rejoined), date(firstmsg), date(updated))
 
   if (!refetch) {
     const resDate = await fetchWithRetries(`${baseUrl}?author_id=${member.id}&channel_id=373576614505611282&include_nsfw=true&sort_by=timestamp&sort_order=asc&offset=0`, token)
@@ -166,7 +167,7 @@ async function fetchMember(member, refetch, data, token, guild) {
   msgperdaycreated = Number(totalmsg / ((Date.now() - created) / 86400000)).toFixed(3)
   msgperdayjoined = Number(totalmsg / ((Date.now() - joined) / 86400000)).toFixed(3)
 
-  console.log('Fetched member: ', member.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperdaycreated, msgperdayjoined, created, joined, rejoined, firstmsg, refetch ? Date.now() : refetch)
+  console.log('Fetched member: ', member.id, name, totalmsg, enmsg, frmsg, othermsg, pings, msgperdaycreated, msgperdayjoined, date(created), date(joined), date(rejoined), date(firstmsg), date())
   return {name, created, joined, rejoined, firstmsg, totalmsg, enmsg, frmsg, othermsg, pings, msgperdaycreated, msgperdayjoined}
 }
 
@@ -213,7 +214,10 @@ async function processMessage(member, token, guild) {
       } else {
         const result = query.rows[0]
         const hoursSinceUpdate = (Date.now() - Number(result.updated)) / (1000 * 60 * 60)
-        if (hoursSinceUpdate >= 24) await queryMember(member, token, guild)
+        if (hoursSinceUpdate >= 24) {
+          const data = await fetchMember(member, true, result, token, guild)
+          if (data) await updateMemberData(member, data, false)
+        }
       }
     } finally {
       processingMembers.delete(memberId)
@@ -243,18 +247,35 @@ module.exports = async (client) => {
       }))
     }
 
-    if (nconf.get('USER2')) {
-      tasks.push((async () => {
-        const sortedMembers = Array.from(guild.members.cache.values()).sort((a, b) => a.joinedTimestamp - b.joinedTimestamp)
-        for (let i = 0; i < sortedMembers.length; i++) {
-          const member = sortedMembers[i]
-          const result = await pool.query('SELECT * FROM members WHERE id = $1', [member.id])
-          const daysSinceJoined = (Date.now() - Number(member.joinedTimestamp)) / (1000 * 60 * 60 * 24)
-          if (result.rows.length !== 0 || member.id === '78600305175961600' || daysSinceJoined < days) continue
-          const data = await fetchMember(member, false, undefined, nconf.get('USER1'), guild)
-          if (data) await updateMemberData(member, data, true)
-        }
+    async function addNewMembers() {
+      const sortedMembers = Array.from(guild.members.cache.values()).sort((a, b) => a.joinedTimestamp - b.joinedTimestamp)
+      for (let i = 0; i < sortedMembers.length; i++) {
+        const member = sortedMembers[i]
+        const result = await pool.query('SELECT * FROM members WHERE id = $1', [member.id])
+        const daysSinceJoined = (Date.now() - Number(member.joinedTimestamp)) / (1000 * 60 * 60 * 24)
+        if (result.rows.length !== 0 || member.id === '78600305175961600' || daysSinceJoined < days) continue
+        const data = await fetchMember(member, false, undefined, nconf.get('USER1'), guild)
+        if (data) await updateMemberData(member, data, true)
+      }
+    }
 
+    async function removeOldMembers() {
+      const { rows: allMembers } = await pool.query('SELECT id, name FROM members')
+      for (const member of allMembers) {
+        if (!guild.members.resolve(member.id)) {
+          await pool.query('DELETE FROM members WHERE id = $1', [member.id])
+          console.log(`Old member deleted: ${member.id} ${member.name}`)
+        }
+      }
+    }
+
+    if (nconf.get('USER1') && nconf.get('USER2')) {
+      tasks.push((async () => {
+        console.log('Adding new members')
+        await addNewMembers()
+        console.log('Removing old members')
+        await removeOldMembers()
+        console.log('Updating current members')
         const { rows: activeMembers } = await pool.query('SELECT * FROM members WHERE total_msg > 0 ORDER BY updated ASC')
         const { rows: inactiveMembers } = await pool.query('SELECT * FROM members WHERE total_msg = 0 ORDER BY updated ASC')
         const activeMembersSorted = activeMembers.map(member => guild.members.resolve(member.id)).filter(Boolean)
@@ -263,17 +284,12 @@ module.exports = async (client) => {
       })())
     } else if (nconf.get('USER1')) {
       tasks.push((async () => {
-        const sortedMembers = Array.from(guild.members.cache.values()).sort((a, b) => a.joinedTimestamp - b.joinedTimestamp)
-        for (let i = 0; i < sortedMembers.length; i++) {
-          const member = sortedMembers[i]
-          const result = await pool.query('SELECT * FROM members WHERE id = $1', [member.id])
-          const daysSinceJoined = (Date.now() - Number(member.joinedTimestamp)) / (1000 * 60 * 60 * 24)
-          if (result.rows.length !== 0 || member.id === '78600305175961600' || daysSinceJoined < days) continue
-          const data = await fetchMember(member, false, undefined, nconf.get('USER1'), guild)
-          if (data) await updateMemberData(member, data, true)
-        }
-
-        const { rows: totalMembers } = await pool.query('SELECT * FROM members ORDER BY updated ASC') 
+        console.log('Adding new members')
+        await addNewMembers()
+        console.log('Removing old members')
+        await removeOldMembers()
+        console.log('Updating current members')
+        const { rows: totalMembers } = await pool.query('SELECT * FROM members ORDER BY updated ASC')
         const totalMembersSorted = totalMembers.map(member => guild.members.resolve(member.id)).filter(Boolean)
         for (const member of totalMembersSorted) await queryMember(member, nconf.get('USER1'), guild)
       })())

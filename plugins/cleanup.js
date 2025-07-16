@@ -12,7 +12,7 @@ module.exports = (client) => {
       const currentDate = Date.now()
       const deletePromises = messages.map(message => {
         const daysSincePosted = (currentDate - message.createdTimestamp) / (1000 * 60 * 60 * 24)
-        if ((channelKey === 'CHANNEL_ADS' && daysSincePosted > 7 && message.content.includes('twitch.tv')) ||
+        if ((channelKey === 'CHANNEL_ADS' && daysSincePosted > 7 && (message.content.includes('twitch.tv') || message.content.includes('kick.com'))) ||
             (channelKey !== 'CHANNEL_ADS' && daysSincePosted > 60 && message.author.bot)) {
           return message.delete()
         }
